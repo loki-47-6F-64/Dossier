@@ -24,8 +24,7 @@ public:
 	// Returned MYSQL struct should not be used
 	MYSQL* open(const char *host, const char *user, const char *passwd);
 
-	void eachRow(std::function<void(MYSQL_ROW)> f);
-	void eachField(MYSQL_ROW row, std::function<void(char*, uint64_t)> f);
+	void eachRow(std::function<void(MYSQL_ROW, uint64_t*)> f);
 
 	void setdb(const char *db);
 

@@ -8,6 +8,16 @@
 
 #include <memory>
 
+// Limited by database schema
+#define MAX_NAME     45
+#define MAX_CATEGORY 45
+#define MAX_COMPANY  45
+#define MAX_USERNAME 16
+
+// Don't want to read client indefinetely
+#define MAX_KEYWORD    55
+#define MAX_PARAMETERS 10
+
 enum _req_code {
 	SEARCH,
 	DOWNLOAD,
@@ -26,8 +36,6 @@ protected:
 	ioFile *_socket;
 public:
 	const char *err_msg = nullptr;
-	// Execute request.
-	//virtual void operator ()();
 
 	// Load request from socket
 	virtual int insert(ioFile *_socket) = 0;
@@ -43,8 +51,7 @@ protected:
 class requestUpload : public requestBase {
 public:
 	std::string company,
-							category,
-							name;
+              username;
 
 	int insert(ioFile *_socket);
 	int exec();
@@ -54,8 +61,7 @@ public:
 class requestDownload : public requestBase {
 public:
 	std::string company,
-              category,
-              name;
+              username;
 
 	int insert(ioFile *_socket);
 	int exec();
@@ -64,8 +70,7 @@ public:
 class requestSearch : public requestBase {
 public:
 	std::string company,
-              category,
-							name;
+              username;
 
 	std::vector<std::string> keywords;
 
@@ -82,5 +87,6 @@ public:
 	//~Proxy();
 
 	int readRequest();
+  
 };
 #endif

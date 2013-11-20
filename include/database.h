@@ -8,12 +8,8 @@
 #include "proxy.h"
 #include "sql_connect.h"
 
-extern const int MAX_NAME;
-
 struct meta_doc {
-  char[MAX_NAME +1] name;
-  char[MAX_NAME +1] company;
-  char[MAX_NAME +1] category; 
+  std::string company;
 };
 
 class Database {
@@ -24,7 +20,7 @@ public:
 	Database();
 //	~Database();
 
-	std::vector<meta_doc> &&search(requestSearch *req);
+	std::vector<meta_doc> search(requestSearch *req);
 	int getFile(requestDownload *req);
 	int newDocument(requestUpload *req);
 

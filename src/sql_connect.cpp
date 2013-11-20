@@ -32,18 +32,12 @@ unsigned int SqlConnect::totalFields() {
 	return mysql_num_fields(_res);
 }
 
-void SqlConnect::eachRow(std::function<void(MYSQL_ROW)> f) {
+void SqlConnect::eachRow(std::function<void(MYSQL_ROW, uint64_t*)> f) {
 	MYSQL_ROW row;
-	while((row = mysql_fetch_row(_res)))
-		f(row);
+	while((row = mysql_fetch_row(_res))) {
+		f(row, mysql_fetch_lengths(_res));
+  }
 }
-
-void SqlConnect::eachField(MYSQL_ROW row, std::function<void(char*, uint64_t)> f) {
-	int num_fields = totalFields();
-  uint64_t *lengths = mysql_fetch_lengths(_res);
-	for(int x = 0; x < num_fields; ++x)
-		f(row[x], lengths[x]);
-} 
 
 const char *SqlConnect::error() { return mysql_error(&_con); }
 

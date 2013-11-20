@@ -46,7 +46,7 @@ public:
 	}
 
 	// Write to file
-	int out() {
+	inline int out() {
 		return _stream << _cache;
 	}
 
@@ -67,24 +67,24 @@ public:
 	}
 
 	// Append buffer
-	void append(std::vector<unsigned char>&& buffer) {
+	inline void append(std::vector<unsigned char>&& buffer) {
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
 	}
 
-	void append(std::string &&buffer) {
+	inline void append(std::string &&buffer) {
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
 	}
 
-	void flush() { _stream.flush(); }
+	inline void flush() { _stream.flush(); }
 
-	std::vector<unsigned char> &getCache() { return _cache; }
+	inline std::vector<unsigned char> &getCache() { return _cache; }
 
 
-	bool eof() { return _stream.eof(); }
-	bool end_of_buffer() { return _data_p >= _cache.size(); }
-	bool is_open() { return _stream.is_open(); }
+	inline bool eof() { return _stream.eof(); }
+	inline bool end_of_buffer() { return _data_p >= _cache.size(); }
+	inline bool is_open() { return _stream.is_open(); }
 
-	void seal() { _stream.seal(); }
+	inline void seal() { _stream.seal(); }
 };
 
 typedef _File<LocalStream> ioFile;

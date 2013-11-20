@@ -1,7 +1,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "main.h"
+#include "proxy.h"
 #include "database.h"
+
 //#include "server.h"
 //#include "sql_connect.h"
 /*
@@ -33,16 +35,25 @@ namespace config {
 	};
 };
 
+void _test(std::string &&str) {
+  //ioFile f(open("test.txt", O_RDWR | O_CREAT));
+  ioFile f;
+  f.append(std::move(str));
+  f.out();
+
+  std::unique_ptr<requestBase> req(new requestSearch());
+  if(req->insert(&f)) {
+    FATAL_ERROR(req->err_msg,0);
+  }
+  if(req->exec()) {
+    FATAL_ERROR(req->err_msg,0);
+  }
+}
+
 int main() {
 	Log::open("out.log");
 
-	Database database;
-	if(database.err_msg ||
-			database.validateUser("Loki", "Hash")) {
-		FATAL_ERROR(database.err_msg, 0);
-	}
-	else
-		Log::Info("Success");
+  _test(std::string("Loki\0ING\0Create", sizeof("Loki\0ING\0Create")));
 
 	Log::close();
 }

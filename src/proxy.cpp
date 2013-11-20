@@ -1,18 +1,9 @@
 #include "main.h"
 #include "proxy.h"
-
-// Limited by database schema
-const int MAX_NAME     45
-const int MAX_CATEGORY 45
-const int MAX_COMPANY  45
-const int MAX_USERNAME 16
-
-// Don't want to read client indefinetely
-const int MAX_KEYWORD    55
-const int MAX_PARAMETERS 10
+#include "database.h"
 
 // Limit file _cache buffer size
-const int REQ_BUFFER_SIZE 256
+const int REQ_BUFFER_SIZE = 1;
 
 Proxy::Proxy(ioFile *socket) : _socket(socket) {}
 
@@ -36,7 +27,6 @@ int Proxy::readRequest() {
 	}
 	return _req->insert(_socket);
 }
-
 int requestBase::_customAppend(std::string &buf, int max) {
 	int pos = 0;
 
@@ -68,10 +58,8 @@ int requestSearch::insert(ioFile *_socket) {
 
 	this->_socket = _socket;
 
-	if(_customAppend(company,  MAX_USERNAME) ||
-		 _customAppend(company,  MAX_COMPANY)  ||
-     _customAppend(category, MAX_CATEGORY) ||
-		 _customAppend(name,     MAX_NAME))
+	if(_customAppend(username, MAX_USERNAME) ||
+		 _customAppend(company,  MAX_COMPANY))
   {
     return -1;
   }
@@ -98,10 +86,8 @@ int requestDownload::insert(ioFile *_socket) {
 
 	this->_socket = _socket;
 
-	if(_customAppend(company,  MAX_USERNAME) ||
-     _customAppend(company,  MAX_COMPANY)  ||
-     _customAppend(category, MAX_CATEGORY) ||
-     _customAppend(name,     MAX_NAME))
+	if(_customAppend(username, MAX_USERNAME) ||
+     _customAppend(company,  MAX_COMPANY))
   {
     return -1;
   }
@@ -114,10 +100,8 @@ int requestUpload::insert(ioFile *_socket) {
 
 	this->_socket = _socket;
 
-	if(_customAppend(company,  MAX_USERNAME) ||
-     _customAppend(company,  MAX_COMPANY)  ||
-     _customAppend(category, MAX_CATEGORY) ||
-     _customAppend(name,     MAX_NAME))
+	if(_customAppend(username, MAX_USERNAME) ||
+     _customAppend(company,  MAX_COMPANY))
   {
     return -1;
   }
@@ -126,8 +110,17 @@ int requestUpload::insert(ioFile *_socket) {
 }
 
 int requestSearch::exec() {
-	
-	return 0;
+  Database db;
+  if(!db.validateUser(username.c_str(), "")) {
+    std::vector<meta_doc> result = db.search(this);
+
+    DEBUG_LOG(result[0].company.c_str());
+    return 0;
+  }
+
+  err_msg = "user validation failed.";
+
+  return -1;
 }
 
 int requestDownload::exec() {

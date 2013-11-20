@@ -51,17 +51,31 @@ int Database::validateUser(std::string &&username, std::string &&hash) {
   }
 
   int rejected;
-	_sql.eachRow([&](MYSQL_ROW row) {
-		_sql.eachField(row, [&](char *field, uint64_t length) {
-      // Field is '0' authentication fail.
-      rejected = *field == '0';
-    });
+	_sql.eachRow([&](MYSQL_ROW row, uint64_t*) {
+    rejected = **row == '0';
 	});
   if(rejected)
     err_msg = "Authentication failed";
   return rejected;
 }
 
-int Database::search(requestSearch *req) {
+#include <iostream>
+std::vector<meta_doc> Database::search(requestSearch *req) {
+  std::ostringstream query;
+  query << "SELECT Company.name FROM Document AS doc INNER JOIN (user, Company) ON (user.idUser=doc.user_idUser AND Company.idCompany=doc.Company_idCompany) WHERE user.username='" << req->username << '\'';
+  if(!req->company.empty()) {
+    query << " AND Company.name='" << req->company << '\'';
+  }
 
+  _sql.query(query.str());
+
+  std::vector<meta_doc> result;
+  _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
+    meta_doc tmp { std::string(*row, lengths[0]) };
+    tmp.company += '\0';
+
+    result.push_back(std::move(tmp));
+  });
+
+  return result;
 }

@@ -10,6 +10,7 @@ int LocalStream::operator>>(std::vector<unsigned char>& buf) {
 	}
 
 	// Determine amount bytes awaiting read.
+  // If _cache to be read is smaller than bytes requested, only read the bytes left to read.
 	ssize_t bytes_read = _cache.size() - _data_p > buf.size() ? buf.size() : _cache.size() - _data_p;
 
 	for(int x = 0; x < bytes_read; x++) {
