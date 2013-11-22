@@ -9,6 +9,7 @@
 #include "sql_connect.h"
 
 struct meta_doc {
+  int64_t id;
   std::string company;
 };
 
@@ -21,7 +22,7 @@ public:
 //	~Database();
 
 	std::vector<meta_doc> search(requestSearch *req);
-	int getFile(requestDownload *req);
+	meta_doc getFile(requestDownload *req);
 	int newDocument(requestUpload *req);
 
 	int validateUser(std::string &&username,

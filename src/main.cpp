@@ -41,7 +41,7 @@ void _test(std::string &&str) {
   f.append(std::move(str));
   f.out();
 
-  std::unique_ptr<requestBase> req(new requestSearch());
+  std::unique_ptr<requestBase> req(new requestDownload());
   if(req->insert(&f)) {
     FATAL_ERROR(req->err_msg,0);
   }
@@ -53,7 +53,20 @@ void _test(std::string &&str) {
 int main() {
 	Log::open("out.log");
 
-  _test(std::string("Loki\0ING\0Create", sizeof("Loki\0ING\0Create")));
+  /*
+    1. c_str
+    2. int64_t
+    3. c_str
+  */
+
+  _test(std::string("Loki\0"
+                    "\x01\x00\x00\x00" "\x00\x00\x00\x00"
+                    "ING", 
+
+             sizeof("Loki\0"
+                    "\x00\x00\x00\x00" "\x00\x00\x00\x00"
+                    "ING")
+  ));
 
 	Log::close();
 }

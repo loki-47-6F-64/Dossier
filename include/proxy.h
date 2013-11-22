@@ -45,6 +45,7 @@ public:
 
 protected:
 	int _customAppend(std::string &buf, int max);
+  int _customAppend(int64_t &buf);
 };
 
 // Client upload
@@ -60,6 +61,7 @@ public:
 // Client download
 class requestDownload : public requestBase {
 public:
+  int64_t idPage;
 	std::string company,
               username;
 

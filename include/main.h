@@ -17,6 +17,7 @@
 	exit(1);
 
 #include <fstream>
+#include <string>
 #include <mutex>
 
 #define LOG_BUFFER_SIZE 25
@@ -56,7 +57,9 @@ namespace Log {
 	void Error(const char* msg);
 	void Warning(const char *msg);
 	void Info(const char *msg);
-	void Debug(const char *file_name, int line, const char *msg);
+
+ 	void Debug(const char *file_name, int line, const char *msg);
+  void Debug(const char *file_name, int line, int64_t msg);
 	
 	void _scanDate();
 };

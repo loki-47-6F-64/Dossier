@@ -59,10 +59,9 @@ int Database::validateUser(std::string &&username, std::string &&hash) {
   return rejected;
 }
 
-#include <iostream>
 std::vector<meta_doc> Database::search(requestSearch *req) {
   std::ostringstream query;
-  query << "SELECT Company.name FROM Document AS doc INNER JOIN (user, Company) ON (user.idUser=doc.user_idUser AND Company.idCompany=doc.Company_idCompany) WHERE user.username='" << req->username << '\'';
+  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (user, Company) ON (user.idUser=doc.user_idUser AND Company.idCompany=doc.Company_idCompany) WHERE user.username='" << req->username << '\'';
   if(!req->company.empty()) {
     query << " AND Company.name='" << req->company << '\'';
   }
@@ -71,10 +70,37 @@ std::vector<meta_doc> Database::search(requestSearch *req) {
 
   std::vector<meta_doc> result;
   _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
-    meta_doc tmp { std::string(*row, lengths[0]) };
+    char *dummy;
+
+    std::string idPage(*row, *lengths);
+    idPage += '\0';
+
+    meta_doc tmp { std::strtol(idPage.c_str(), &dummy, 10), std::string(row[1], lengths[1]) };
     tmp.company += '\0';
 
     result.push_back(std::move(tmp));
+  });
+
+  return result;
+}
+
+meta_doc Database::getFile(requestDownload *req) {
+  std::ostringstream query;
+  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (user, Company) ON (user.idUser=doc.user_idUser AND Company.idCompany=doc.Company_idCompany) WHERE user.username='" <<
+    req->username << "' AND doc.idPage=" << req->idPage;
+
+  _sql.query(query.str());
+
+  meta_doc result;
+  _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
+    char *dummy;
+  
+    std::string idPage(*row, *lengths);
+    idPage += '\0';
+
+    result.id = std::strtol(idPage.c_str(), &dummy, 10);
+    result.company.append(row[1], lengths[1]);
+    result.company += '\0';
   });
 
   return result;

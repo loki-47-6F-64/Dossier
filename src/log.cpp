@@ -79,6 +79,20 @@ void Log::Debug(const char *file_name, int line, const char *msg) {
 					<< std::endl;
   )
 }
+
+void Log::Debug(const char *file_name, int line, int64_t msg) {
+  ON_DEBUG(
+    std::lock_guard<std::mutex>lock{log_lock};
+    _scanDate();
+
+    f_out << date <<
+          " Debug: " << file_name
+          << ": " << line
+          << " :" << msg
+          << std::endl;
+  )
+}
+
 void Log::_scanDate() {
   std::time_t t = std::time(NULL);
   strftime(date, sizeof(date), "[%Y:%m:%d:%H:%M:%S]", std::localtime(&t));
