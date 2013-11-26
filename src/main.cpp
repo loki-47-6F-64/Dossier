@@ -35,13 +35,13 @@ namespace config {
 	};
 };
 
-void _test(std::string &&str) {
+void _test(std::string &str) {
   //ioFile f(open("test.txt", O_RDWR | O_CREAT));
   ioFile f;
   f.append(std::move(str));
   f.out();
 
-  std::unique_ptr<requestBase> req(new requestDownload());
+  std::unique_ptr<requestBase> req(new requestAuthenticate());
   if(req->insert(&f)) {
     FATAL_ERROR(req->err_msg,0);
   }
@@ -53,20 +53,13 @@ void _test(std::string &&str) {
 int main() {
 	Log::open("out.log");
 
-  /*
-    1. c_str
-    2. int64_t
-    3. c_str
-  */
+  std::string in;
+  in += "Lsoki";
+  in += '\0';
+  in += "HASH";
+  in += '\0';
 
-  _test(std::string("Loki\0"
-                    "\x01\x00\x00\x00" "\x00\x00\x00\x00"
-                    "ING", 
-
-             sizeof("Loki\0"
-                    "\x00\x00\x00\x00" "\x00\x00\x00\x00"
-                    "ING")
-  ));
+  _test(in);
 
 	Log::close();
 }

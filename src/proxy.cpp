@@ -1,18 +1,18 @@
 #include "main.h"
 #include "proxy.h"
-#include "database.h"
+
+#include "authenticate.h"
 
 // Limit file _cache buffer size
 const int REQ_BUFFER_SIZE = 1;
 
-Proxy::Proxy(ioFile *socket) : _socket(socket) {}
-
-int Proxy::readRequest() {
-	if(_socket->load(REQ_BUFFER_SIZE) < 0) {
+std::unique_ptr<requestBase> getRequest(ioFile *socket) {
+	if(socket->load(REQ_BUFFER_SIZE) < 0) {
 		FATAL_ERROR("Parse request", errno);
 	}
 
-	switch (_socket->next()) {
+  std::unique_ptr<requestBase> _req;
+	switch (socket->next()) {
 		case _req_code::SEARCH:
 			_req = std::unique_ptr<requestSearch>(new requestSearch());
 			break;
@@ -22,10 +22,13 @@ int Proxy::readRequest() {
 		case _req_code::UPLOAD:
 			_req = std::unique_ptr<requestUpload>(new requestUpload());
 			break;
-		default:
-			return -1;
+    case _req_code::AUTHENTICATE:
+      _req = std::unique_ptr<requestAuthenticate>(new requestAuthenticate());
+    break;
 	}
-	return _req->insert(_socket);
+	_req->insert(socket);
+
+  return _req;
 }
 
 int requestBase::_customAppend(int64_t &buf) {
@@ -70,12 +73,26 @@ int requestBase::_customAppend(std::string &buf, int max) {
 	return 0;
 }
 
+int requestAuthenticate::insert(ioFile *_socket) {
+  DEBUG_LOG("Parse authenticate request");
+
+  this->_socket = _socket;
+
+  if(_customAppend(username, MAX_USERNAME) ||
+     _customAppend(password,  MAX_PASSWORD))
+  {
+    return -1;
+  }
+
+  return 0;
+}
+
 int requestSearch::insert(ioFile *_socket) {
 	DEBUG_LOG("Parse search request");
 
 	this->_socket = _socket;
 
-	if(_customAppend(username, MAX_USERNAME) ||
+	if(_customAppend(token, MAX_TOKEN) ||
 		 _customAppend(company,  MAX_COMPANY))
   {
     return -1;
@@ -103,14 +120,14 @@ int requestDownload::insert(ioFile *_socket) {
 
 	this->_socket = _socket;
 
-	if(_customAppend(username, MAX_USERNAME) ||
+	if(_customAppend(token, MAX_TOKEN) ||
      _customAppend(idPage)                 ||
      _customAppend(company,  MAX_COMPANY))
   {
     return -1;
   }
 
-  DEBUG_LOG(username.c_str());
+  DEBUG_LOG(token.c_str());
   DEBUG_LOG(idPage);
   DEBUG_LOG(company.c_str());
 
@@ -122,7 +139,7 @@ int requestUpload::insert(ioFile *_socket) {
 
 	this->_socket = _socket;
 
-	if(_customAppend(username, MAX_USERNAME) ||
+	if(_customAppend(token, MAX_TOKEN) ||
      _customAppend(company,  MAX_COMPANY))
   {
     return -1;
@@ -131,13 +148,39 @@ int requestUpload::insert(ioFile *_socket) {
   return 0;
 }
 
+int requestAuthenticate::exec() {
+  DEBUG_LOG("Execute authenticate request");
+
+  Database db;
+  Authenticater auth(&db);
+
+  std::string token = auth.validate(username, password);
+
+  if(!auth.err_msg) {
+    // Return token
+
+    DEBUG_LOG(token.c_str());
+    return 0;
+  }
+
+  DEBUG_LOG(username.c_str());
+  DEBUG_LOG(password.c_str());
+
+  err_msg = auth.err_msg;
+  return -1;
+}
+
 int requestSearch::exec() {
   DEBUG_LOG("Execute search request");
 
   Database db;
-  if(!db.validateUser(username.c_str(), "")) {
+  Authenticater auth(&db);
+
+  int64_t id = auth.validate(token);
+
+  if(!auth.err_msg) {
     std::vector<meta_doc> result = db.search(this);
-   
+ 
     return 0;
   }
 
@@ -150,7 +193,11 @@ int requestDownload::exec() {
   DEBUG_LOG("Excecute download requests");
 
   Database db;
-  if(!db.validateUser(username.c_str(), "")) {
+  Authenticater auth(&db);
+
+  int64_t id = auth.validate(token);
+
+  if(!auth.err_msg) {
     meta_doc result = db.getFile(this);
    
     DEBUG_LOG(result.company.c_str());
@@ -165,6 +212,20 @@ int requestDownload::exec() {
 }
 
 int requestUpload::exec() {
-  
-	return 0;
+  DEBUG_LOG("Execute search request");
+
+  Database db;
+  Authenticater auth(&db);
+
+  int64_t id = auth.validate(token);
+
+  if(!auth.err_msg) {
+    db.newDocument(this);
+
+    return 0;
+  }
+
+  err_msg = "user validation failed.";
+
+	return -1;
 }

@@ -19,9 +19,9 @@ Database::Database() {
 }
 
 
-int Database::insertUser(std::string &&username,
-                  		std::string &&email,
-                  		std::string &&hash)
+int Database::insertUser(std::string &username,
+                  		std::string &email,
+                  		std::string &hash)
 {
 	std::ostringstream query;
 
@@ -37,7 +37,7 @@ int Database::insertUser(std::string &&username,
 	return 0;
 }
 
-int Database::validateUser(std::string &&username, std::string &&hash) {
+int64_t Database::validateUser(std::string &username, std::string &hash) {
 	std::ostringstream query;
 
 	query << "SELECT EXISTS(SELECT 1 FROM user WHERE username='" << 
@@ -54,6 +54,7 @@ int Database::validateUser(std::string &&username, std::string &&hash) {
 	_sql.eachRow([&](MYSQL_ROW row, uint64_t*) {
     rejected = **row == '0';
 	});
+
   if(rejected)
     err_msg = "Authentication failed";
   return rejected;
@@ -61,7 +62,7 @@ int Database::validateUser(std::string &&username, std::string &&hash) {
 
 std::vector<meta_doc> Database::search(requestSearch *req) {
   std::ostringstream query;
-  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (user, Company) ON (user.idUser=doc.user_idUser AND Company.idCompany=doc.Company_idCompany) WHERE user.username='" << req->username << '\'';
+  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.idUser='" << req->idUser << '\'';
   if(!req->company.empty()) {
     query << " AND Company.name='" << req->company << '\'';
   }
@@ -86,8 +87,8 @@ std::vector<meta_doc> Database::search(requestSearch *req) {
 
 meta_doc Database::getFile(requestDownload *req) {
   std::ostringstream query;
-  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (user, Company) ON (user.idUser=doc.user_idUser AND Company.idCompany=doc.Company_idCompany) WHERE user.username='" <<
-    req->username << "' AND doc.idPage=" << req->idPage;
+  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" <<
+    req->idUser << "' AND doc.idPage=" << req->idPage;
 
   _sql.query(query.str());
 
@@ -104,4 +105,15 @@ meta_doc Database::getFile(requestDownload *req) {
   });
 
   return result;
+}
+
+int Database::newDocument(requestUpload *req) {
+  std::ostringstream query;
+  query << "INSERT INTO Document (user_idUser, Company_idCompany) VALUES (" << req->idUser << ", (SELECT idCompany FROM Company WHERE Company.user_idUser=" << req->idUser << " AND Company.name='" << req->company < "' LIMIT 1))";
+
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return -1;
+  }
+  return 0;
 }

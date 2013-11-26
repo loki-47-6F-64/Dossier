@@ -17,6 +17,8 @@
 // Don't want to read client indefinetely
 #define MAX_KEYWORD    55
 #define MAX_PARAMETERS 10
+#define MAX_TOKEN      255
+#define MAX_PASSWORD   255
 
 enum _req_code {
 	SEARCH,
@@ -52,7 +54,8 @@ protected:
 class requestUpload : public requestBase {
 public:
 	std::string company,
-              username;
+              token;
+  int64_t idUser;
 
 	int insert(ioFile *_socket);
 	int exec();
@@ -62,8 +65,10 @@ public:
 class requestDownload : public requestBase {
 public:
   int64_t idPage;
+  int64_t idUser;
+
 	std::string company,
-              username;
+              token;
 
 	int insert(ioFile *_socket);
 	int exec();
@@ -72,23 +77,23 @@ public:
 class requestSearch : public requestBase {
 public:
 	std::string company,
-              username;
+              token;
 
+  int64_t idUser;
 	std::vector<std::string> keywords;
 
 	int insert(ioFile *_socket);
 	int exec();
 };
 
-class Proxy {
-	std::unique_ptr<requestBase> _req;
-
-	ioFile *_socket;
+class requestAuthenticate : public requestBase {
 public:
-	Proxy(ioFile *socket);
-	//~Proxy();
+  std::string username,
+              password;
 
-	int readRequest();
-  
+  int insert(ioFile *_socket);
+  int exec();
 };
+
+std::unique_ptr<requestBase> getRequest(ioFile *socket);
 #endif

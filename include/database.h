@@ -23,14 +23,18 @@ public:
 
 	std::vector<meta_doc> search(requestSearch *req);
 	meta_doc getFile(requestDownload *req);
+
 	int newDocument(requestUpload *req);
 
-	int validateUser(std::string &&username,
-									 std::string &&hash);
+  // Return id user
+	int64_t validateUser(std::string &username,
+									 std::string &hash);
 
-	int insertUser(std::string &&username,
-									std::string &&email,
-								  std::string &&hash);
+	int insertUser(std::string &username,
+									std::string &email,
+								  std::string &hash);
+
+  int insertCompany(std::string &name);
 };
 
 #endif
