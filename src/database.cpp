@@ -60,11 +60,11 @@ int64_t Database::validateUser(std::string &username, std::string &hash) {
   return rejected;
 }
 
-std::vector<meta_doc> Database::search(requestSearch *req) {
+std::vector<meta_doc> Database::search(int64_t idUser, std::string &company) {
   std::ostringstream query;
-  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.idUser='" << req->idUser << '\'';
-  if(!req->company.empty()) {
-    query << " AND Company.name='" << req->company << '\'';
+  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.idUser='" << idUser << '\'';
+  if(!company.empty()) {
+    query << " AND Company.name='" << company << '\'';
   }
 
   _sql.query(query.str());
@@ -85,10 +85,10 @@ std::vector<meta_doc> Database::search(requestSearch *req) {
   return result;
 }
 
-meta_doc Database::getFile(requestDownload *req) {
+meta_doc Database::getFile(int64_t idUser, int64_t idPage) {
   std::ostringstream query;
   query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" <<
-    req->idUser << "' AND doc.idPage=" << req->idPage;
+    idUser << "' AND doc.idPage=" << idPage;
 
   _sql.query(query.str());
 
@@ -107,9 +107,9 @@ meta_doc Database::getFile(requestDownload *req) {
   return result;
 }
 
-int Database::newDocument(requestUpload *req) {
+int Database::newDocument(int64_t idUser, std::string &company) {
   std::ostringstream query;
-  query << "INSERT INTO Document (user_idUser, Company_idCompany) VALUES (" << req->idUser << ", (SELECT idCompany FROM Company WHERE Company.user_idUser=" << req->idUser << " AND Company.name='" << req->company < "' LIMIT 1))";
+  query << "INSERT INTO Document (user_idUser, Company_idCompany) VALUES (" << idUser << ", (SELECT idCompany FROM Company WHERE Company.user_idUser=" << idUser << " AND Company.name='" << company << "' LIMIT 1))";
 
   if(_sql.query(query.str())) {
     err_msg = _sql.error();

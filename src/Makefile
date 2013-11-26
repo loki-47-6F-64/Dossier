@@ -24,7 +24,7 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CPP_FLAGS)
 
-dossier: $(OBJ)
+dossier.out: $(OBJ)
 	$(CC) -o $@ $^ $(CPP_FLAGS) $(LIBS)
 
 .PHONY: clean

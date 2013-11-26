@@ -55,7 +55,6 @@ class requestUpload : public requestBase {
 public:
 	std::string company,
               token;
-  int64_t idUser;
 
 	int insert(ioFile *_socket);
 	int exec();
@@ -65,7 +64,6 @@ public:
 class requestDownload : public requestBase {
 public:
   int64_t idPage;
-  int64_t idUser;
 
 	std::string company,
               token;
@@ -79,7 +77,6 @@ public:
 	std::string company,
               token;
 
-  int64_t idUser;
 	std::vector<std::string> keywords;
 
 	int insert(ioFile *_socket);

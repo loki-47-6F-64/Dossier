@@ -21,10 +21,10 @@ public:
 	Database();
 //	~Database();
 
-	std::vector<meta_doc> search(requestSearch *req);
-	meta_doc getFile(requestDownload *req);
+	std::vector<meta_doc> search(int64_t idUser, std::string &company);
+	meta_doc getFile(int64_t idUser, int64_t idPage);
 
-	int newDocument(requestUpload *req);
+	int newDocument(int64_t idUser, std::string &company);
 
   // Return id user
 	int64_t validateUser(std::string &username,

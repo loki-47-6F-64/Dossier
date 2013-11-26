@@ -179,7 +179,7 @@ int requestSearch::exec() {
   int64_t id = auth.validate(token);
 
   if(!auth.err_msg) {
-    std::vector<meta_doc> result = db.search(this);
+    std::vector<meta_doc> result = db.search(id, company);
  
     return 0;
   }
@@ -198,7 +198,7 @@ int requestDownload::exec() {
   int64_t id = auth.validate(token);
 
   if(!auth.err_msg) {
-    meta_doc result = db.getFile(this);
+    meta_doc result = db.getFile(id, idPage);
    
     DEBUG_LOG(result.company.c_str());
     DEBUG_LOG(result.id);
@@ -220,7 +220,7 @@ int requestUpload::exec() {
   int64_t id = auth.validate(token);
 
   if(!auth.err_msg) {
-    db.newDocument(this);
+    db.newDocument(id, company);
 
     return 0;
   }
