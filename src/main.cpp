@@ -35,31 +35,15 @@ namespace config {
 	};
 };
 
-void _test(std::string &str) {
-  //ioFile f(open("test.txt", O_RDWR | O_CREAT));
-  ioFile f;
-  f.append(std::move(str));
-  f.out();
-
-  std::unique_ptr<requestBase> req(new requestAuthenticate());
-  if(req->insert(&f)) {
-    FATAL_ERROR(req->err_msg,0);
-  }
-  if(req->exec()) {
-    FATAL_ERROR(req->err_msg,0);
-  }
-}
-
 int main() {
 	Log::open("out.log");
 
-  std::string in;
-  in += "Lsoki";
-  in += '\0';
-  in += "HASH";
-  in += '\0';
+  ioFile in(STDIN_FILENO);
+  ioFile out(STDOUT_FILENO);
 
-  _test(in);
+  copy<ioFile, ioFile>(in, out, 1);
 
 	Log::close();
+
+  return 0;
 }

@@ -5,6 +5,14 @@
 
 #include "stream.h"
 
+template<class In, class Out>
+void copy(In &in, Out &out, int bufSize) {
+  while(!in.eof()) {
+    in.load(bufSize);
+    out.getCache() = in.getCache();
+    out.out();
+  }
+}
 /* Represents file in memory, storage or socket */
 template <class Stream>
 class _File {
@@ -67,11 +75,11 @@ public:
 	}
 
 	// Append buffer
-	inline void append(std::vector<unsigned char>&& buffer) {
+	inline void append(std::vector<unsigned char>& buffer) {
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
 	}
 
-	inline void append(std::string &&buffer) {
+	inline void append(std::string &buffer) {
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
 	}
 
@@ -87,6 +95,6 @@ public:
 	inline void seal() { _stream.seal(); }
 };
 
-typedef _File<LocalStream> ioFile;
+typedef _File<FileStream> ioFile;
 
 #endif
