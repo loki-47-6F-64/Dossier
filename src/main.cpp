@@ -39,8 +39,8 @@ int main() {
 	Log::open("out.log");
 
   ioFile in(STDIN_FILENO);
-  ioFile out(STDOUT_FILENO);
 
+  ioFile out(STDOUT_FILENO);
   copy<ioFile, ioFile>(in, out, 1);
 
 	Log::close();

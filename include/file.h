@@ -13,6 +13,15 @@ void copy(In &in, Out &out, int bufSize) {
     out.out();
   }
 }
+
+template<class In, class Out>
+void copy(In &in, std::string &path, int bufSize) {
+  Out out;
+  out.access(path);
+
+  copy<In, Out>(in, out, bufSize);
+}
+
 /* Represents file in memory, storage or socket */
 template <class Stream>
 class _File {
@@ -32,7 +41,7 @@ public:
 			seal();
 	}
 
-	int access(std::string&& path) {
+	int access(std::string& path) {
 		if(is_open())
     	seal();
 

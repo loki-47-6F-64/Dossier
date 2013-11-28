@@ -222,6 +222,7 @@ int requestUpload::exec() {
   if(!auth.err_msg) {
     db.newDocument(id, company);
 
+    
     return 0;
   }
 
