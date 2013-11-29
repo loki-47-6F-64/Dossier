@@ -107,13 +107,13 @@ meta_doc Database::getFile(int64_t idUser, int64_t idPage) {
   return result;
 }
 
-int Database::newDocument(int64_t idUser, std::string &company) {
+int64_t Database::newDocument(int64_t idUser, std::string &company) {
   std::ostringstream query;
   query << "INSERT INTO Document (user_idUser, Company_idCompany) VALUES (" << idUser << ", (SELECT idCompany FROM Company WHERE Company.user_idUser=" << idUser << " AND Company.name='" << company << "' LIMIT 1))";
 
   if(_sql.query(query.str())) {
     err_msg = _sql.error();
-    return -1;
+    return 0;
   }
-  return 0;
+  return _sql.idInserted();
 }

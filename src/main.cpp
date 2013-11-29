@@ -1,29 +1,26 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "main.h"
-#include "proxy.h"
+
+#include "server.h"
 #include "database.h"
 
-//#include "server.h"
-//#include "sql_connect.h"
-/*
 typedef unsigned char byte;
-
-namespace config {
-	// Initialize with default values
-	_server server { 8080, AF_INET, INADDR_ANY, 200 };
-};
 
 void start_server() {
 	Server s;
-	if(s.addListener(config::server.port, 20) < 0) {
+	if(s.addListener(config::server.port, 20, [&](ioFile& f) {
+    ioFile echo (1, STDOUT_FILENO);
+
+    echo.close_after_delete = false;
+
+    f.load(1024);
+    copy<ioFile, ioFile>(f, echo);
+  }) < 0) {
 		FATAL_ERROR("Can't set listener:", errno);
 	}
 	s();
 }
-
-*/
-
 
 namespace config {
   // Initialize with default values
@@ -33,15 +30,19 @@ namespace config {
 		"root",
 		"mydb"
 	};
+
+  _storage storage {
+    "."
+  };
+
+  _server server { 8080, AF_INET, INADDR_ANY, 200 };
 };
 
+#include <iostream>
 int main() {
 	Log::open("out.log");
 
-  ioFile in(STDIN_FILENO);
-
-  ioFile out(STDOUT_FILENO);
-  copy<ioFile, ioFile>(in, out, 1);
+  start_server();
 
 	Log::close();
 

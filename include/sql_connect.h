@@ -31,6 +31,9 @@ public:
 	unsigned int totalFields();
 	unsigned int totalRows();
 
+  /* Return id of last insert */
+  int64_t idInserted();
+
 	const char *error();
 
 	void close();	

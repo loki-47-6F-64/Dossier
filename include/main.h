@@ -40,8 +40,13 @@ namespace config {
 		const char *db;
 	};
 
+  struct _storage {
+    const char *root;
+  };
+
 	extern _database database;
 	extern _server server;
+  extern _storage storage;
 };
 
 namespace Log {

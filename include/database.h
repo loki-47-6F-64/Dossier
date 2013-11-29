@@ -24,7 +24,8 @@ public:
 	std::vector<meta_doc> search(int64_t idUser, std::string &company);
 	meta_doc getFile(int64_t idUser, int64_t idPage);
 
-	int newDocument(int64_t idUser, std::string &company);
+  // Create new meta_doc and return the id.
+	int64_t newDocument(int64_t idUser, std::string &company);
 
   // Return id user
 	int64_t validateUser(std::string &username,

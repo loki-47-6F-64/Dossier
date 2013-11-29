@@ -1,7 +1,7 @@
 #include "main.h"
 #include "server.h"
-#include "file.h"
 
+#include <unistd.h>
 #include <thread>
 #include <algorithm>
 void Server::operator() () {
@@ -12,7 +12,7 @@ void Server::operator() () {
 	_listen();
 }
 
-int Server::addListener(uint16_t port, int max_parallel) {
+int Server::addListener(uint16_t port, int max_parallel, std::function<void(ioFile&)> f) {
 	sockaddr_in server {
 		config::server.inet,
 		htons(port),
@@ -40,6 +40,7 @@ int Server::addListener(uint16_t port, int max_parallel) {
 	/* lock */ {
 		std::lock_guard<std::mutex> lg(_add_listen);
 		_listenfd.push_back(pfd);
+    _action.push_back(f);
 	} // unlock
 
 	return pfd.fd;
@@ -48,11 +49,14 @@ int Server::addListener(uint16_t port, int max_parallel) {
 void Server::removeListener(int fd) {
 	/* lock */ {
 		std::lock_guard<std::mutex> lg(_add_listen);
-    _listenfd.erase(
-			std::remove_if(_listenfd.begin(), _listenfd.end(), [&](pollfd& pfd) {
-				return pfd.fd == fd;
-			}),
-			 _listenfd.end());
+    for(int x = 0; x < _listenfd.size(); ++x) {
+      if(_listenfd[x].fd == fd) {
+        _listenfd.erase(_listenfd.begin() + x);
+        _action  .erase(_action  .begin() + x);
+
+        break;
+      }
+    }
   } // unlock
 
 	close(fd);
@@ -81,15 +85,19 @@ void Server::_listen() {
 		std::unique_lock<std::mutex> ul(_add_listen);
     if((result = poll(_listenfd.data(), _listenfd.size(), config::server.poll_timeout)) > 0) 
 		{
-			for(auto& poll : _listenfd) {
+			for(int x = 0; x < _listenfd.size(); ++x) {
+        auto& poll = _listenfd[x];
+
 				if(poll.revents == POLLIN) {
 					DEBUG_LOG("Accepting client");
-					
+	
       		// Accept new client
-      		File client_sock { accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size) };
+      		ioFile client_sock { 1024, accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size)};
 
-      		client_sock.load(1024);
-      		client_sock.out();
+          // Call user function
+          _action[x](client_sock); 
+
+          DEBUG_LOG("client closed...");
 				}
 			}
 			
@@ -98,6 +106,7 @@ void Server::_listen() {
       FATAL_ERROR("Cannot poll socket", errno);
     }
   }
+
 	// Cleanup
 	for(auto& poll : _listenfd) {
 		close(poll.fd);

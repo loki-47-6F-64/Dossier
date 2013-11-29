@@ -212,17 +212,29 @@ int requestDownload::exec() {
 }
 
 int requestUpload::exec() {
-  DEBUG_LOG("Execute search request");
+  DEBUG_LOG("Execute upload request");
 
   Database db;
   Authenticater auth(&db);
 
-  int64_t id = auth.validate(token);
+  int64_t idUser = auth.validate(token);
 
   if(!auth.err_msg) {
-    db.newDocument(id, company);
+    int64_t idPage = db.newDocument(idUser, company);
 
-    
+        
+    /* root/idUser/ */
+    std::string path = config::storage.root;
+    if(path.back() != '/') {
+      path += '/';
+    }
+    path.append(std::to_string(idUser));
+    path += '/';
+
+    path.append(std::to_string(idPage));
+    path += ".txt";
+
+    copy<ioFile, ioFile>(*_socket, path);
     return 0;
   }
 

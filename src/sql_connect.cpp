@@ -51,3 +51,5 @@ void SqlConnect::close() {
 
 	mysql_close(&_con);
 }
+
+int64_t SqlConnect::idInserted() { return mysql_insert_id(&_con); }

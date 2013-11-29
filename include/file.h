@@ -2,24 +2,28 @@
 #define DOSSIER_FILE_H
 
 
-
 #include "stream.h"
 
 template<class In, class Out>
-void copy(In &in, Out &out, int bufSize) {
-  while(!in.eof()) {
-    in.load(bufSize);
-    out.getCache() = in.getCache();
+void copy(In &in, Out &out) {
+  while(!in.eof()) {    
+    std::vector<unsigned char> &cache = out.getCache();
+
+    cache.clear();
+    for(auto &it = in.cbegin(); it < in.cend(); ++it) {
+      cache.push_back(*it);
+    }
+
     out.out();
   }
 }
 
 template<class In, class Out>
-void copy(In &in, std::string &path, int bufSize) {
-  Out out;
+void copy(In &in, std::string &path) {
+  Out out(in.cacheSize);
   out.access(path);
 
-  copy<In, Out>(in, out, bufSize);
+  copy<In, Out>(in, out);
 }
 
 /* Represents file in memory, storage or socket */
@@ -27,17 +31,23 @@ template <class Stream>
 class _File {
 	Stream _stream;
 
-	int _data_p;
 	std::vector<unsigned char> _cache;
+  std::vector<unsigned char>::const_iterator _data_p;
 
 public:
-	_File() {}
-	_File(int fd) {
+  // Change of cacheSize only affects next load
+  int cacheSize;
+
+  // Wether or not to close the file after deletion of _File
+  bool close_after_delete = true;
+
+	_File(int cacheSize) : cacheSize(cacheSize) {}
+	_File(int cacheSize, int fd) : cacheSize(cacheSize) {
 		_stream = fd;
 	}
 
 	~_File() {
-		if(is_open())
+		if(close_after_delete && is_open())
 			seal();
 	}
 
@@ -58,7 +68,7 @@ public:
   	if((_stream >> _cache) < 0)
     	return -1;
 
-  	_data_p = 0;
+  	_data_p = _cache.cbegin();
   	return 0;
 	}
 
@@ -71,16 +81,16 @@ public:
 	void replace(std::vector<unsigned char>&& buffer) {
 		_cache = std::move(buffer);
 
-  	_data_p = 0;
+  	_data_p = _cache.cbegin();
 	}
 
 	// Buffer pointers
 	unsigned char next() {
 		// Load new _cache if end of buffer is reached
   	if(end_of_buffer())
-    	load(_cache.capacity());
+    	load(cacheSize);
 
-  	return _cache[_data_p++];
+  	return *_data_p++;
 	}
 
 	// Append buffer
@@ -98,10 +108,26 @@ public:
 
 
 	inline bool eof() { return _stream.eof(); }
-	inline bool end_of_buffer() { return _data_p >= _cache.size(); }
+
+	inline bool end_of_buffer() {
+    return _data_p >= _cache.cend() || 
+          !_cache.size();
+  }
+
 	inline bool is_open() { return _stream.is_open(); }
 
 	inline void seal() { _stream.seal(); }
+
+  std::vector<unsigned char>::const_iterator &cbegin() {
+    if(end_of_buffer()) {
+      load(cacheSize);
+    }
+    return _data_p;
+  }
+
+  std::vector<unsigned char>::const_iterator cend() {
+    return _cache.cend();
+  }
 };
 
 typedef _File<FileStream> ioFile;

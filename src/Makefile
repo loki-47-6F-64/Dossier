@@ -14,7 +14,7 @@ LIBS= -pthread -ldl `mysql_config --libs`
 _DEPS = main.h authenticate.h database.h file.h stream.h proxy.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = database.o authenticate.o sql_connect.o local_stream.o file_stream.o log.o proxy.o main.o#hellofunc.o 
+_OBJ = database.o authenticate.o sql_connect.o local_stream.o file_stream.o log.o server.o proxy.o main.o#hellofunc.o 
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
