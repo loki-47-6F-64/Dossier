@@ -2,7 +2,10 @@
 #include "server.h"
 
 #include <unistd.h>
+
 #include <thread>
+#include <future>
+
 #include <algorithm>
 void Server::operator() () {
 	if(isRunning())
@@ -12,7 +15,7 @@ void Server::operator() () {
 	_listen();
 }
 
-int Server::addListener(uint16_t port, int max_parallel, std::function<void(ioFile&)> f) {
+int Server::addListener(uint16_t port, int max_parallel, std::function<void(int)> f) {
 	sockaddr_in server {
 		config::server.inet,
 		htons(port),
@@ -92,12 +95,11 @@ void Server::_listen() {
 					DEBUG_LOG("Accepting client");
 	
       		// Accept new client
-      		ioFile client_sock { 1024, accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size)};
+          std::thread t(_action[x],
+            accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size)
+          );
 
-          // Call user function
-          _action[x](client_sock); 
-
-          DEBUG_LOG("client closed...");
+          t.detach();
 				}
 			}
 			

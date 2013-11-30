@@ -9,7 +9,7 @@ CFLAGS=$(MAIN_FLAGS)
 ODIR=obj
 LDIR =../lib
 
-LIBS= -pthread -ldl `mysql_config --libs`
+LIBS= -lpthread -ldl `mysql_config --libs`
 
 _DEPS = main.h authenticate.h database.h file.h stream.h proxy.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))

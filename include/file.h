@@ -1,7 +1,6 @@
 #ifndef DOSSIER_FILE_H
 #define DOSSIER_FILE_H
 
-
 #include "stream.h"
 
 template<class In, class Out>
@@ -10,8 +9,8 @@ void copy(In &in, Out &out) {
     std::vector<unsigned char> &cache = out.getCache();
 
     cache.clear();
-    for(auto &it = in.cbegin(); it < in.cend(); ++it) {
-      cache.push_back(*it);
+    while(!in.end_of_buffer()) {
+      cache.push_back(in.next());
     }
 
     out.out();
@@ -32,7 +31,7 @@ class _File {
 	Stream _stream;
 
 	std::vector<unsigned char> _cache;
-  std::vector<unsigned char>::const_iterator _data_p;
+  uint64_t _data_p = 0;
 
 public:
   // Change of cacheSize only affects next load
@@ -51,6 +50,10 @@ public:
 			seal();
 	}
 
+  int access(std::string &&path) {
+    return access(path);
+  }
+
 	int access(std::string& path) {
 		if(is_open())
     	seal();
@@ -68,7 +71,7 @@ public:
   	if((_stream >> _cache) < 0)
     	return -1;
 
-  	_data_p = _cache.cbegin();
+  	_data_p = 0;
   	return 0;
 	}
 
@@ -81,16 +84,17 @@ public:
 	void replace(std::vector<unsigned char>&& buffer) {
 		_cache = std::move(buffer);
 
-  	_data_p = _cache.cbegin();
+  	_data_p = 0;
 	}
 
 	// Buffer pointers
 	unsigned char next() {
 		// Load new _cache if end of buffer is reached
-  	if(end_of_buffer())
+  	if(end_of_buffer()) {
     	load(cacheSize);
+    }
 
-  	return *_data_p++;
+  	return _cache[_data_p++];
 	}
 
 	// Append buffer
@@ -110,24 +114,12 @@ public:
 	inline bool eof() { return _stream.eof(); }
 
 	inline bool end_of_buffer() {
-    return _data_p >= _cache.cend() || 
-          !_cache.size();
+    return _data_p >= _cache.size();  
   }
 
 	inline bool is_open() { return _stream.is_open(); }
 
 	inline void seal() { _stream.seal(); }
-
-  std::vector<unsigned char>::const_iterator &cbegin() {
-    if(end_of_buffer()) {
-      load(cacheSize);
-    }
-    return _data_p;
-  }
-
-  std::vector<unsigned char>::const_iterator cend() {
-    return _cache.cend();
-  }
 };
 
 typedef _File<FileStream> ioFile;
