@@ -4,36 +4,49 @@
 #include <thread>
 #include "main.h"
 
+#include "file.h"
 #include "server.h"
-#include "database.h"
+#include "proxy.h"
 
 typedef unsigned char byte;
 
 void start_server() {
 	Server s;
+
 	if(s.addListener(config::server.port, 20, [&](int fd) {
-    ioFile f(1, fd);
-    ioFile echo (1, STDOUT_FILENO);
+    ioFile client { 1, fd };
+    std::unique_ptr<requestBase> req = getRequest(&client);
 
-    echo.close_after_delete = false;
-
-    f.load(1024);
-    copy<ioFile, ioFile>(f, echo);
-  }) < 0) {
+    if(req.get() == nullptr) {
+      Log::Warning("Unknown request.");
+      return;
+    }
+    if(req->insert(&client) || 
+       req->exec())
+    {
+      Log::Warning(req->err_msg);
+    }
+  }
+  ) < 0) {
 		FATAL_ERROR("Can't set listener:", errno);
 	}
 
   if(s.addListener(8081, 20, [&](int fd) {
-    ioFile f(1, fd);
-    ioFile echo (1, STDOUT_FILENO);
+    DEBUG_LOG("Started Copy...");
+
+    ioFile client { 2, fd };
+    ioFile echo { 2, STDOUT_FILENO };
 
     echo.close_after_delete = false;
 
-    f.load(2);
-    f.out();
-  }) < 0) {
+    client.copy(echo);
+
+    DEBUG_LOG("Finished copy");
+  }
+  ) < 0) {
     FATAL_ERROR("Can't set listener:", errno);
   }
+
 	s();
 }
 

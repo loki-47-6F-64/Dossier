@@ -7,9 +7,6 @@
 const int REQ_BUFFER_SIZE = 1;
 
 std::unique_ptr<requestBase> getRequest(ioFile *socket) {
-	if(socket->load(REQ_BUFFER_SIZE) < 0) {
-		FATAL_ERROR("Parse request", errno);
-	}
 
   std::unique_ptr<requestBase> _req;
 	switch (socket->next()) {
@@ -26,8 +23,6 @@ std::unique_ptr<requestBase> getRequest(ioFile *socket) {
       _req = std::unique_ptr<requestAuthenticate>(new requestAuthenticate());
     break;
 	}
-	_req->insert(socket);
-
   return _req;
 }
 
@@ -234,7 +229,10 @@ int requestUpload::exec() {
     path.append(std::to_string(idPage));
     path += ".txt";
 
-    copy<ioFile, ioFile>(*_socket, path);
+    ioFile out(1);
+    out.access(path);
+
+    _socket->copy(out);
     return 0;
   }
 

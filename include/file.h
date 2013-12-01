@@ -3,35 +3,13 @@
 
 #include "stream.h"
 
-template<class In, class Out>
-void copy(In &in, Out &out) {
-  while(!in.eof()) {    
-    std::vector<unsigned char> &cache = out.getCache();
-
-    cache.clear();
-    while(!in.end_of_buffer()) {
-      cache.push_back(in.next());
-    }
-
-    out.out();
-  }
-}
-
-template<class In, class Out>
-void copy(In &in, std::string &path) {
-  Out out(in.cacheSize);
-  out.access(path);
-
-  copy<In, Out>(in, out);
-}
-
 /* Represents file in memory, storage or socket */
 template <class Stream>
 class _File {
 	Stream _stream;
 
 	std::vector<unsigned char> _cache;
-  uint64_t _data_p = 0;
+  std::vector<unsigned char>::const_iterator _data_p;
 
 public:
   // Change of cacheSize only affects next load
@@ -71,7 +49,7 @@ public:
   	if((_stream >> _cache) < 0)
     	return -1;
 
-  	_data_p = 0;
+  	_data_p = _cache.cbegin();
   	return 0;
 	}
 
@@ -84,7 +62,7 @@ public:
 	void replace(std::vector<unsigned char>&& buffer) {
 		_cache = std::move(buffer);
 
-  	_data_p = 0;
+  	_data_p = _cache.cbegin();
 	}
 
 	// Buffer pointers
@@ -94,7 +72,7 @@ public:
     	load(cacheSize);
     }
 
-  	return _cache[_data_p++];
+  	return *_data_p++;
 	}
 
 	// Append buffer
@@ -114,12 +92,28 @@ public:
 	inline bool eof() { return _stream.eof(); }
 
 	inline bool end_of_buffer() {
-    return _data_p >= _cache.size();  
+    return _data_p == _cache.cend();  
   }
 
 	inline bool is_open() { return _stream.is_open(); }
 
 	inline void seal() { _stream.seal(); }
+
+  template<class Out=_File<Stream>>
+  void copy(Out &out) {
+    while(!eof()) {
+      std::vector<unsigned char> &cache = out.getCache();
+  
+      cache.clear();
+
+      while(!end_of_buffer()) {
+        cache.push_back(*_data_p++);
+      }
+      out.out();
+
+      load(cacheSize);
+    }
+  }
 };
 
 typedef _File<FileStream> ioFile;
