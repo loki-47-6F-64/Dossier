@@ -36,5 +36,6 @@ void LocalStream::seal() {}
 
 void LocalStream::flush() {}
 
+int LocalStream::fd() { return -1; }
 bool LocalStream::is_open() { return true; }
 bool LocalStream::eof() { return _eof; }

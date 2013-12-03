@@ -34,7 +34,7 @@ void start_server() {
   if(s.addListener(8081, 20, [&](int fd) {
     DEBUG_LOG("Started Copy...");
 
-    ioFile client { 2, fd };
+    ioFile client { 1, fd, -1 };
     ioFile echo { 2, STDOUT_FILENO };
 
     echo.close_after_delete = false;

@@ -43,5 +43,6 @@ void FileStream::flush() {
 	fsync(_fd);
 }
 
+int FileStream::fd() { return _fd;};
 bool FileStream::is_open() { return _fd != -1; }
 bool FileStream::eof() { return _eof; }

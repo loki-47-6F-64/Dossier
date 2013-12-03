@@ -23,6 +23,7 @@ public:
 	void seal();
 
 	void flush();
+  int fd();
 };
 
 class LocalStream {
@@ -49,6 +50,8 @@ public:
   
 	/* unsupported */
   void flush();
+
+  int fd();
 };
 
 #endif

@@ -3,6 +3,19 @@
 
 #include "authenticate.h"
 
+enum _req_code {
+  SEARCH,
+  DOWNLOAD,
+  UPLOAD,
+  AUTHENTICATE
+};
+
+enum response {
+  OK,
+  INTERNAL_ERROR,
+  CORRUPT_REQUEST
+};
+
 // Limit file _cache buffer size
 const int REQ_BUFFER_SIZE = 1;
 
@@ -43,29 +56,32 @@ int requestBase::_customAppend(int64_t &buf) {
 }
 
 int requestBase::_customAppend(std::string &buf, int max) {
-	int pos = 0;
+  bool cont = true;
+  int result = 0;
 
-	// Make sure eof has not been reached yet.
-	char ch = _socket->next();
-	if(_socket->eof())
-		return 0;
+  while(cont) {
+    if(_socket->eof()) {
+      err_msg = "Reached EOF before \\0";
+      return -1;
+    }
 
-	buf.push_back(ch);
+    _socket->eachLoaded([&](unsigned char ch) {
+      if(buf.size() > max) {
+        result = -1;
+        err_msg = "String to large";
 
-	while((ch = _socket->next())) {
-		if(pos++ >= max) {
-			err_msg = "string to large";
-			return -1;
-		}
+        return false;
+      }
 
-		if(_socket->eof()) {
-			err_msg = "reached eof before \\0";
-			return -1;
-		}
-		buf.push_back(ch);
-	}
+      if(!ch) {
+        return cont = false;
+      }
 
-	return 0;
+      buf.push_back(ch);
+      return true;
+    });
+  }
+	return result;
 }
 
 int requestAuthenticate::insert(ioFile *_socket) {
@@ -78,6 +94,9 @@ int requestAuthenticate::insert(ioFile *_socket) {
   {
     return -1;
   }
+
+  DEBUG_LOG(username.c_str());
+  DEBUG_LOG(password.c_str());
 
   return 0;
 }
@@ -107,6 +126,12 @@ int requestSearch::insert(ioFile *_socket) {
 		keywords.push_back(std::move(tmp));
 	}
 
+  DEBUG_LOG(token.c_str());
+  DEBUG_LOG(company.c_str());
+
+  for(auto& keyword : keywords) {
+    DEBUG_LOG(keyword.c_str());
+  }
   return 0;
 }
 
@@ -153,6 +178,9 @@ int requestAuthenticate::exec() {
 
   if(!auth.err_msg) {
     // Return token
+    _socket->getCache().clear();
+    _socket->append(token);
+    _socket->out();
 
     DEBUG_LOG(token.c_str());
     return 0;

@@ -20,19 +20,6 @@
 #define MAX_TOKEN      255
 #define MAX_PASSWORD   255
 
-enum _req_code {
-	SEARCH,
-	DOWNLOAD,
-	UPLOAD,
-	AUTHENTICATE
-};
-
-enum response {
-	OK,
-	INTERNAL_ERROR,
-	CORRUPT_REQUEST
-};
-
 class requestBase {
 protected:
 	ioFile *_socket;
