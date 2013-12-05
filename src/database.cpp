@@ -40,8 +40,8 @@ int Database::insertUser(std::string &username,
 int64_t Database::validateUser(std::string &username, std::string &hash) {
 	std::ostringstream query;
 
-	query << "SELECT EXISTS(SELECT 1 FROM user WHERE username='" << 
-  username.data() << "' LIMIT 1)";
+	query << "SELECT 1 FROM user WHERE username='" << 
+  username.data() << "' LIMIT 1";
   //query << "' AND password='";
 	//query << hash.data(); query << "' LIMIT 1)";
 
@@ -50,33 +50,38 @@ int64_t Database::validateUser(std::string &username, std::string &hash) {
     return -1;
   }
 
-  int rejected;
+  bool rejected = true;
+
+  int64_t id = 0;
 	_sql.eachRow([&](MYSQL_ROW row, uint64_t*) {
-    rejected = **row == '0';
+    rejected = false;
+
+    id = std::strtol(*row, nullptr, 10);
 	});
 
   if(rejected)
     err_msg = "Authentication failed";
-  return rejected;
+  return id;
 }
 
 std::vector<meta_doc> Database::search(int64_t idUser, std::string &company) {
   std::ostringstream query;
-  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.idUser='" << idUser << '\'';
+  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" << idUser << '\'';
   if(!company.empty()) {
     query << " AND Company.name='" << company << '\'';
   }
 
-  _sql.query(query.str());
-
   std::vector<meta_doc> result;
-  _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
-    char *dummy;
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return result;
+  }
 
+  _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
     std::string idPage(*row, *lengths);
     idPage += '\0';
 
-    meta_doc tmp { std::strtol(idPage.c_str(), &dummy, 10), std::string(row[1], lengths[1]) };
+    meta_doc tmp { std::stol(idPage), std::string(row[1], lengths[1]) };
     tmp.company += '\0';
 
     result.push_back(std::move(tmp));
