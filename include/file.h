@@ -99,6 +99,14 @@ public:
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
 	}
 
+  inline void append(unsigned char ch) {
+    _cache.push_back(ch);
+  }
+
+  inline void append(std::string &&buffer) {
+    append(buffer);
+  }
+
   int access(std::string &&path) {
     return access(path);
   }

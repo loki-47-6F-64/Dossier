@@ -2,8 +2,9 @@ IDIR =../include
 CC=clang++
 C=clang
 
-MAIN_FLAGS=-O0 -I$(IDIR) -g `mysql_config --cflags`
+MAIN_FLAGS=-O0 -I$(IDIR) -g `mysql_config --include`
 CPP_FLAGS=-std=c++11 $(MAIN_FLAGS) #-ferror-limit=200
+
 CFLAGS=$(MAIN_FLAGS)
 
 ODIR=obj

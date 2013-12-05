@@ -10,10 +10,11 @@ enum _req_code {
   AUTHENTICATE
 };
 
-enum response {
+enum _response {
   OK,
   INTERNAL_ERROR,
-  CORRUPT_REQUEST
+  CORRUPT_REQUEST,
+  UNAUTHORIZED
 };
 
 // Limit file _cache buffer size
@@ -176,18 +177,19 @@ int requestAuthenticate::exec() {
 
   std::string token = auth.validate(username, password);
 
+  _socket->getCache().clear();
   if(!auth.err_msg) {
     // Return token
-    _socket->getCache().clear();
+    _socket->append(_response::OK);
     _socket->append(token);
     _socket->out();
 
-    DEBUG_LOG(token.c_str());
     return 0;
   }
 
-  DEBUG_LOG(username.c_str());
-  DEBUG_LOG(password.c_str());
+  _socket->append(_response::UNAUTHORIZED);
+  _socket->append("Username/Password is incorrect");
+  _socket->out();
 
   err_msg = auth.err_msg;
   return -1;
