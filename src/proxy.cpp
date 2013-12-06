@@ -17,11 +17,7 @@ enum _response {
   UNAUTHORIZED
 };
 
-// Limit file _cache buffer size
-const int REQ_BUFFER_SIZE = 1;
-
 std::unique_ptr<requestBase> getRequest(ioFile *socket) {
-
   std::unique_ptr<requestBase> _req;
 	switch (socket->next()) {
 		case _req_code::SEARCH:
@@ -41,18 +37,14 @@ std::unique_ptr<requestBase> getRequest(ioFile *socket) {
 }
 
 int requestBase::_customAppend(int64_t &buf) {
-  for(int x = 0; x < sizeof(int64_t); ++x) {
-    if(_socket->eof()) {
-      err_msg = "Not full int64_t supplied";
-      return -1;
-    }
-    buf |= (int64_t)_socket->next() << x*8;
-  }
-  if(_socket->eof()) {
-    err_msg = "No full int64_t supplied";
+  constexpr int max_digits = 10;
+
+  std::string str;
+  if(_customAppend(str, max_digits)) {
     return -1;
   }
 
+  buf = std::stol(str);
   return 0;
 }
 
@@ -121,7 +113,8 @@ int requestSearch::insert(ioFile *_socket) {
 			return -1;
 		}
 
-		if(_socket->eof())
+    // No more keywords
+		if(tmp.empty())
 			break;
 
 		keywords.push_back(std::move(tmp));
@@ -187,7 +180,7 @@ int requestAuthenticate::exec() {
     return 0;
   }
 
-  _socket->append(_response::UNAUTHORIZED);
+  _socket->append(_response::INTERNAL_ERROR);
   _socket->append("Username/Password is incorrect");
   _socket->out();
 
@@ -199,15 +192,36 @@ int requestSearch::exec() {
   DEBUG_LOG("Execute search request");
 
   Database db;
+  if(db.err_msg) {
+    err_msg = db.err_msg;
+    return -1;
+  }
+
   Authenticater auth(&db);
 
   int64_t id = auth.validate(token);
 
+  _socket->getCache().clear();
   if(!auth.err_msg) {
     std::vector<meta_doc> result = db.search(id, company);
  
+    _socket->append(_response::OK);
+    for(auto& doc : result) {
+      _socket->append(doc.company);
+      _socket->append('\0');
+
+      _socket->append(std::to_string(doc.id));
+      _socket->append('\0');
+    }
+
+    _socket->out();
+       
     return 0;
   }
+
+  _socket->append(_response::UNAUTHORIZED);
+  _socket->append("Unauthorized access");
+  _socket->out();
 
   err_msg = "user validation failed.";
 
@@ -230,6 +244,10 @@ int requestDownload::exec() {
 
     return 0;
   }
+
+  _socket->append(_response::UNAUTHORIZED);
+  _socket->append("Unauthorized access");
+  _socket->out();
 
   err_msg = "user validation failed.";
 

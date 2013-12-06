@@ -7,7 +7,7 @@
 #include "file.h"
 #include "server.h"
 #include "proxy.h"
-
+#include "database.h"
 typedef unsigned char byte;
 
 void start_server() {

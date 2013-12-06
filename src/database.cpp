@@ -79,10 +79,8 @@ std::vector<meta_doc> Database::search(int64_t idUser, std::string &company) {
 
   _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
     std::string idPage(*row, *lengths);
-    idPage += '\0';
 
     meta_doc tmp { std::stol(idPage), std::string(row[1], lengths[1]) };
-    tmp.company += '\0';
 
     result.push_back(std::move(tmp));
   });
@@ -102,11 +100,9 @@ meta_doc Database::getFile(int64_t idUser, int64_t idPage) {
     char *dummy;
   
     std::string idPage(*row, *lengths);
-    idPage += '\0';
 
     result.id = std::strtol(idPage.c_str(), &dummy, 10);
     result.company.append(row[1], lengths[1]);
-    result.company += '\0';
   });
 
   return result;
