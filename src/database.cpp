@@ -19,7 +19,7 @@ Database::Database() {
 }
 
 
-int Database::insertUser(std::string &username,
+int Database::newUser(std::string &username,
                   		std::string &email,
                   		std::string &hash)
 {
@@ -89,13 +89,17 @@ std::vector<meta_doc> Database::search(int64_t idUser, std::string &company) {
 }
 
 meta_doc Database::getFile(int64_t idUser, int64_t idPage) {
+  meta_doc result;
+
   std::ostringstream query;
   query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" <<
     idUser << "' AND doc.idPage=" << idPage;
 
-  _sql.query(query.str());
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return result;
+  }
 
-  meta_doc result;
   _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
     char *dummy;
   
@@ -117,4 +121,18 @@ int64_t Database::newDocument(int64_t idUser, std::string &company) {
     return 0;
   }
   return _sql.idInserted();
+}
+
+int Database::newCompany(std::string &name, int64_t idUser) {
+  std::ostringstream query;
+
+  query << "INSERT INTO Company (user_idUser, name) VALUES ("
+        << idUser << ", '"
+        << name   << "')";
+
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return -1;
+  }
+  return 0;
 }

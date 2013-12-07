@@ -31,11 +31,11 @@ public:
 	int64_t validateUser(std::string &username,
 									 std::string &hash);
 
-	int insertUser(std::string &username,
+	int newUser(std::string &username,
 									std::string &email,
 								  std::string &hash);
 
-  int insertCompany(std::string &name);
+  int newCompany(std::string &name, int64_t idUser);
 };
 
 #endif

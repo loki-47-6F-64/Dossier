@@ -7,6 +7,7 @@ enum _req_code {
   SEARCH,
   DOWNLOAD,
   UPLOAD,
+  NEW_COMPANY,
   AUTHENTICATE
 };
 
@@ -29,6 +30,9 @@ std::unique_ptr<requestBase> getRequest(ioFile *socket) {
 		case _req_code::UPLOAD:
 			_req = std::unique_ptr<requestUpload>(new requestUpload());
 			break;
+    case _req_code::NEW_COMPANY:
+      _req = std::unique_ptr<requestNewCompany>(new requestNewCompany());
+      break;
     case _req_code::AUTHENTICATE:
       _req = std::unique_ptr<requestAuthenticate>(new requestAuthenticate());
     break;
@@ -162,6 +166,23 @@ int requestUpload::insert(ioFile *_socket) {
   return 0;
 }
 
+int requestNewCompany::insert(ioFile *_socket) {
+  DEBUG_LOG("Parse new Company request");
+
+  this->_socket = _socket;
+
+  if(_customAppend(token, MAX_TOKEN) ||
+     _customAppend(name,  MAX_COMPANY))
+  { 
+    return -1;
+  }
+
+  DEBUG_LOG(token.c_str());
+  DEBUG_LOG(name.c_str());
+
+  return 0;
+}
+
 int requestAuthenticate::exec() {
   DEBUG_LOG("Execute authenticate request");
 
@@ -284,7 +305,37 @@ int requestUpload::exec() {
     return 0;
   }
 
+  _socket->append(_response::UNAUTHORIZED);
+  _socket->append(auth.err_msg);
+  _socket->append('\0');
+  _socket->out();
+
   err_msg = "user validation failed.";
 
 	return -1;
+}
+
+int requestNewCompany::exec() {
+  DEBUG_LOG("Execute new Company request");
+  Database db;
+
+  Authenticater auth(&db);
+
+  int64_t idUser = auth.validate(token);
+
+  _socket->getCache().clear();
+  if(!auth.err_msg) {
+    db.newCompany(name, idUser);
+    _socket->append(_response::OK);
+    _socket->out();
+
+    return 0;
+  }
+
+  _socket->append(_response::UNAUTHORIZED);
+  _socket->append(auth.err_msg);
+  _socket->append('\0');
+  _socket->out();
+
+  return -1;
 }

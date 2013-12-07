@@ -79,5 +79,14 @@ public:
   int exec();
 };
 
+class requestNewCompany : public requestBase {
+public:
+  std::string token,
+              name;
+
+  int insert(ioFile *_socket);
+  int exec();
+};
+
 std::unique_ptr<requestBase> getRequest(ioFile *socket);
 #endif
