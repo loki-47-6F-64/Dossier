@@ -28,7 +28,7 @@ int FileStream::operator<<(std::vector<unsigned char>&buf) {
 }
 
 int FileStream::access(std::string& path) {
-	_fd = open(path.c_str(), O_RDWR);
+	_fd = open(path.c_str(), O_CREAT | O_RDWR, S_IRWXU);
 	_eof= false;
 
 	return _fd;

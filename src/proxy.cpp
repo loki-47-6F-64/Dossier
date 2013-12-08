@@ -158,7 +158,8 @@ int requestUpload::insert(ioFile *_socket) {
 	this->_socket = _socket;
 
 	if(_customAppend(token, MAX_TOKEN) ||
-     _customAppend(company,  MAX_COMPANY))
+     _customAppend(company,  MAX_COMPANY) ||
+     _customAppend(size))
   {
     return -1;
   }
@@ -292,8 +293,8 @@ int requestUpload::exec() {
     if(path.back() != '/') {
       path += '/';
     }
-    path.append(std::to_string(idUser));
-    path += '/';
+/*    path.append(std::to_string(idUser));
+    path += '/';*/
 
     path.append(std::to_string(idPage));
     path += ".txt";
@@ -301,7 +302,15 @@ int requestUpload::exec() {
     ioFile out(1);
     out.access(path);
 
-    _socket->copy(out);
+    _socket->copy(out, size);
+
+
+    DEBUG_LOG("Copied out");
+    _socket->getCache().clear();
+
+    _socket->append(_response::OK);
+    _socket->out();
+
     return 0;
   }
 

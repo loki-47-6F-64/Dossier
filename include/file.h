@@ -126,15 +126,17 @@ public:
 	inline void seal() { _stream.seal(); }
 
 
+  /* Copies max files from this to out
+     If max == -1 copy the whole file */
   template<class Out=_File<Stream>>
-  void copy(Out &out) {
+  void copy(Out &out, int64_t max = -1) {
     std::vector<unsigned char> &cache = out.getCache();
 
-    while(!eof()) {
+    while(!eof() && max) {
       cache.clear();
       eachLoaded([&](unsigned char data_p) {
         cache.push_back(data_p);
-        return true;
+        return --max;
       });
       out.out();
     }

@@ -42,6 +42,7 @@ class requestUpload : public requestBase {
 public:
 	std::string company,
               token;
+  int64_t size;
 
 	int insert(ioFile *_socket);
 	int exec();
