@@ -13,8 +13,7 @@ typedef unsigned char byte;
 void start_server() {
 	Server s;
 
-	if(s.addListener(config::server.port, 20, [&](int fd) {
-    ioFile client { 1, fd };
+	if(s.addListener(config::server.port, 20, [&](ioFile &&client) {
     std::unique_ptr<requestBase> req = getRequest(&client);
 
     if(req.get() == nullptr) {
@@ -31,10 +30,9 @@ void start_server() {
 		FATAL_ERROR("Can't set listener:", errno);
 	}
 
-  if(s.addListener(8081, 20, [&](int fd) {
+  if(s.addListener(8081, 20, [&](ioFile &&client) {
     DEBUG_LOG("Started Copy...");
 
-    ioFile client { 1, fd, -1 };
     ioFile echo { 2, STDOUT_FILENO };
 
     echo.close_after_delete = false;

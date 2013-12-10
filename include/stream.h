@@ -11,6 +11,7 @@ class FileStream {
 public:
 	FileStream();
 
+  void operator =(FileStream&& stream);
 	void operator =(int fd);
 
 	int operator >>(std::vector<unsigned char>& buf);
@@ -25,33 +26,4 @@ public:
 	void flush();
   int fd();
 };
-
-class LocalStream {
-	std::vector<unsigned char> _cache;
-	int _data_p;
-
-	bool _eof;
-
-public:
-	LocalStream();
-
-	/* unsupported */
-	void operator =(int fd);
-
-  int operator >>(std::vector<unsigned char>& buf);
-  int operator <<(std::vector<unsigned char>& buf);
-  
-  bool is_open();
-  bool eof();
-
-	/* unsupported */
-  int access(std::string &path);
-  void seal();
-  
-	/* unsupported */
-  void flush();
-
-  int fd();
-};
-
 #endif

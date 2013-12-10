@@ -8,6 +8,14 @@ void FileStream::operator=(int fd) {
 	_fd = fd;
 }
 
+void FileStream::operator=(FileStream&& stream) {
+  this->_fd =  stream._fd;
+  this->_eof =  stream._eof;
+
+  stream._fd = -1;
+  stream._eof= true;
+}
+
 int FileStream::operator>>(std::vector<unsigned char>& buf) {
 	ssize_t bytes_read;
 

@@ -11,7 +11,7 @@ class Server {
 	bool _continue;
 
 	std::vector<pollfd> _listenfd;
-  std::vector<std::function<void(int)>> _action;
+  std::vector<std::function<void(ioFile&&)>> _action;
 
 	std::mutex _add_listen;
 public:
@@ -20,7 +20,7 @@ public:
 	void operator() ();
 
 	// Returns -1 on failure
-	int addListener(uint16_t port, int max_parallel, std::function<void(int)> f);
+	int addListener(uint16_t port, int max_parallel, std::function<void(ioFile&&)> f);
 	void removeListener(int fd);
 
 	void stop();

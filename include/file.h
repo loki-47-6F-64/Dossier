@@ -21,6 +21,15 @@ public:
   // Wether or not to close the file after deletion of _File
   bool close_after_delete = true;
 
+  _File(_File&& other) {
+    _stream = std::move(other._stream);
+    _cache  = std::move(other._cache);
+
+    _data_p = _cache.cbegin();
+    _microsec = other._microsec;
+    cacheSize = other.cacheSize;
+  }
+
 	_File(int cacheSize, long microsec = -1) 
       : cacheSize(cacheSize), _microsec(microsec) {}
 
