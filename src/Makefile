@@ -10,12 +10,12 @@ CFLAGS=$(MAIN_FLAGS)
 ODIR=obj
 LDIR =../lib
 
-LIBS= -lpthread -ldl `mysql_config --libs`
+LIBS= -lpthread -ldl -lssl -lcrypto `mysql_config --libs`
 
-_DEPS = main.h authenticate.h database.h file.h stream.h proxy.h
+_DEPS = main.h authenticate.h database.h file.h stream.h proxy.h server.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = database.o authenticate.o sql_connect.o local_stream.o file_stream.o log.o server.o proxy.o main.o#hellofunc.o 
+_OBJ = database.o authenticate.o sql_connect.o ssl_stream.o file_stream.o log.o server.o proxy.o main.o#hellofunc.o 
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 

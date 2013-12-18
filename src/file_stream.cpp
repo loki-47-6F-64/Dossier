@@ -4,12 +4,12 @@
 #include "stream.h"
 
 FileStream::FileStream() : _fd(-1), _eof(false) {}
-void FileStream::operator=(int fd) {
+void FileStream::open(int fd) {
 	_fd = fd;
 }
 
 void FileStream::operator=(FileStream&& stream) {
-  this->_fd =  stream._fd;
+  this->_fd  =  stream._fd;
   this->_eof =  stream._eof;
 
   stream._fd = -1;
@@ -36,7 +36,7 @@ int FileStream::operator<<(std::vector<unsigned char>&buf) {
 }
 
 int FileStream::access(std::string& path) {
-	_fd = open(path.c_str(), O_CREAT | O_RDWR, S_IRWXU);
+	_fd = ::open(path.c_str(), O_CREAT | O_RDWR, S_IRWXU);
 	_eof= false;
 
 	return _fd;

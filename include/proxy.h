@@ -22,12 +22,12 @@
 
 class requestBase {
 protected:
-	ioFile *_socket;
+	sslFile *_socket;
 public:
 	const char *err_msg = nullptr;
 
 	// Load request from socket
-	virtual int insert(ioFile *_socket) = 0;
+	virtual int insert(sslFile *_socket) = 0;
 
 	// Excecute request
 	virtual int exec() = 0;
@@ -44,7 +44,7 @@ public:
               token;
   int64_t size;
 
-	int insert(ioFile *_socket);
+	int insert(sslFile *_socket);
 	int exec();
 };
 
@@ -56,7 +56,7 @@ public:
 	std::string company,
               token;
 
-	int insert(ioFile *_socket);
+	int insert(sslFile *_socket);
 	int exec();
 };
 
@@ -67,7 +67,7 @@ public:
 
 	std::vector<std::string> keywords;
 
-	int insert(ioFile *_socket);
+	int insert(sslFile *_socket);
 	int exec();
 };
 
@@ -76,7 +76,7 @@ public:
   std::string username,
               password;
 
-  int insert(ioFile *_socket);
+  int insert(sslFile *_socket);
   int exec();
 };
 
@@ -85,9 +85,9 @@ public:
   std::string token,
               name;
 
-  int insert(ioFile *_socket);
+  int insert(sslFile *_socket);
   int exec();
 };
 
-std::unique_ptr<requestBase> getRequest(ioFile *socket);
+std::unique_ptr<requestBase> getRequest(sslFile *socket);
 #endif

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+SSL_CTX *Server::_ssl_ctx;
 void Server::operator() () {
 	if(isRunning())
 		return;
@@ -16,7 +17,7 @@ void Server::operator() () {
 	_listen();
 }
 
-int Server::addListener(uint16_t port, int max_parallel, std::function<void(ioFile&&)> f) {
+int Server::addListener(uint16_t port, int max_parallel, std::function<void(sslFile&&)> f) {
 	sockaddr_in server {
 		config::server.inet,
 		htons(port),
@@ -95,7 +96,7 @@ void Server::_listen() {
 				if(poll.revents == POLLIN) {
 					DEBUG_LOG("Accepting client");
 	
-          ioFile client(1, accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size));
+          sslFile client(1, accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size), Server::_ssl_ctx);
       		// Accept new client
           std::thread t(_action[x], std::move(client));
 

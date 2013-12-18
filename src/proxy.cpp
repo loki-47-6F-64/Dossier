@@ -18,7 +18,7 @@ enum _response {
   UNAUTHORIZED
 };
 
-std::unique_ptr<requestBase> getRequest(ioFile *socket) {
+std::unique_ptr<requestBase> getRequest(sslFile *socket) {
   std::unique_ptr<requestBase> _req;
 	switch (socket->next()) {
 		case _req_code::SEARCH:
@@ -81,7 +81,7 @@ int requestBase::_customAppend(std::string &buf, int max) {
 	return result;
 }
 
-int requestAuthenticate::insert(ioFile *_socket) {
+int requestAuthenticate::insert(sslFile *_socket) {
   DEBUG_LOG("Parse authenticate request");
 
   this->_socket = _socket;
@@ -98,7 +98,7 @@ int requestAuthenticate::insert(ioFile *_socket) {
   return 0;
 }
 
-int requestSearch::insert(ioFile *_socket) {
+int requestSearch::insert(sslFile *_socket) {
 	DEBUG_LOG("Parse search request");
 
 	this->_socket = _socket;
@@ -133,7 +133,7 @@ int requestSearch::insert(ioFile *_socket) {
   return 0;
 }
 
-int requestDownload::insert(ioFile *_socket) {
+int requestDownload::insert(sslFile *_socket) {
 	DEBUG_LOG("Parse download request");
 
 	this->_socket = _socket;
@@ -152,7 +152,7 @@ int requestDownload::insert(ioFile *_socket) {
 	return 0;
 }
 
-int requestUpload::insert(ioFile *_socket) {
+int requestUpload::insert(sslFile *_socket) {
 	DEBUG_LOG("Parse upload request");
 
 	this->_socket = _socket;
@@ -167,7 +167,7 @@ int requestUpload::insert(ioFile *_socket) {
   return 0;
 }
 
-int requestNewCompany::insert(ioFile *_socket) {
+int requestNewCompany::insert(sslFile *_socket) {
   DEBUG_LOG("Parse new Company request");
 
   this->_socket = _socket;
@@ -299,7 +299,7 @@ int requestUpload::exec() {
     path.append(std::to_string(idPage));
     path += ".txt";
 
-    ioFile out(1);
+    sslFile out(1);
     out.access(path);
 
     _socket->copy(out, size);

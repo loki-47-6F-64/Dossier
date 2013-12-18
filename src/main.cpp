@@ -10,10 +10,11 @@
 #include "database.h"
 typedef unsigned char byte;
 
+#define ROOT_SERVER "/home/loki/keys/server/"
 void start_server() {
 	Server s;
 
-	if(s.addListener(config::server.port, 20, [&](ioFile &&client) {
+	if(s.addListener(config::server.port, 20, [&](sslFile &&client) {
     std::unique_ptr<requestBase> req = getRequest(&client);
 
     if(req.get() == nullptr) {
@@ -30,14 +31,14 @@ void start_server() {
 		FATAL_ERROR("Can't set listener:", errno);
 	}
 
-  if(s.addListener(8081, 20, [&](ioFile &&client) {
+  if(s.addListener(8081, 20, [&](sslFile &&client) {
     DEBUG_LOG("Started Copy...");
 
     ioFile echo { 2, STDOUT_FILENO };
 
     echo.close_after_delete = false;
 
-    client.copy(echo);
+    client.copy<ioFile>(echo);
 
     DEBUG_LOG("Finished copy");
   }
@@ -61,12 +62,17 @@ namespace config {
     "."
   };
 
-  _server server { 8080, AF_INET, INADDR_ANY, 200 };
+  _server server {
+    std::string(ROOT_SERVER "root.crt"),
+    std::string(ROOT_SERVER "ssl_server.key"),
+    8080, AF_INET, INADDR_ANY, 200
+  };
 };
 
 int main() {
 	Log::open("out.log");
 
+  Server::init(config::server.certPath, config::server.keyPath);
   start_server();
 
 	Log::close();

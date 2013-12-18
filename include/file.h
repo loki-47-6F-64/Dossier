@@ -6,7 +6,7 @@
 
 #include "stream.h"
 /* Represents file in memory, storage or socket */
-template <class Stream>
+template <class Stream, class... Args>
 class _File {
 	Stream _stream;
 
@@ -33,10 +33,10 @@ public:
 	_File(int cacheSize, long microsec = -1) 
       : cacheSize(cacheSize), _microsec(microsec) {}
 
-	_File(int cacheSize, int fd, long microsec = -1) 
-      : cacheSize(cacheSize), _microsec(microsec) 
+	_File(int cacheSize, Args... params) 
+      : cacheSize(cacheSize), _microsec(-1)
   {
-		_stream = fd;
+		_stream.open(std::forward<Args>(params)...);
 	}
 
 	~_File() {
@@ -152,6 +152,6 @@ public:
   }
 };
 
-typedef _File<FileStream> ioFile;
-
+typedef _File<FileStream, int> ioFile;
+typedef _File<SslStream, int, SSL_CTX*> sslFile;
 #endif

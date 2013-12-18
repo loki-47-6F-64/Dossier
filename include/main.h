@@ -26,6 +26,8 @@
 #include <arpa/inet.h>
 namespace config {
 	struct _server {
+    std::string certPath, keyPath;
+
 		uint16_t port;
 		sa_family_t inet; 				// IPv4 or IPv6
 		in_addr_t allowed_inaddr; // Allowed incoming IP addresses
