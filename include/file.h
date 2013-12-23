@@ -76,7 +76,11 @@ public:
 
 	// Write to file
 	inline int out() {
-		return _stream << _cache;
+		if((_stream << _cache) >= 0) {
+      _cache.clear();
+      return 0;
+    }
+    return -1;
 	}
 
 	// Buffer pointers
@@ -112,6 +116,18 @@ public:
     _cache.push_back(ch);
   }
 
+  inline void append(char ch) {
+    append(static_cast<unsigned char>(ch));
+  }
+
+  inline void append(long integer) {
+    append(std::to_string(integer));
+  }
+
+  inline void append(int integer) {
+    append(std::to_string(integer));
+  }
+
   inline void append(std::string &&buffer) {
     append(buffer);
   }
@@ -135,14 +151,13 @@ public:
 	inline void seal() { _stream.seal(); }
 
 
-  /* Copies max files from this to out
+  /* Copies max bytes from this to out
      If max == -1 copy the whole file */
   template<class Out=_File<Stream>>
   void copy(Out &out, int64_t max = -1) {
     std::vector<unsigned char> &cache = out.getCache();
 
     while(!eof() && max) {
-      cache.clear();
       eachLoaded([&](unsigned char data_p) {
         cache.push_back(data_p);
         return --max;
@@ -152,6 +167,6 @@ public:
   }
 };
 
-typedef _File<FileStream, int> ioFile;
-typedef _File<SslStream, int, SSL_CTX*> sslFile;
+typedef _File<FileStream> ioFile;
+typedef _File<SslStream> sslFile;
 #endif

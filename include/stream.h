@@ -6,14 +6,14 @@
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-class FileStream {
+class _FileStream {
 	bool _eof;
 	int _fd;
 
 public:
-	FileStream();
+	_FileStream();
 
-  void operator =(FileStream&& stream);
+  void operator =(_FileStream&& stream);
 	void open(int fd);
 
 	int operator >>(std::vector<unsigned char>& buf);
@@ -29,14 +29,14 @@ public:
   int fd();
 };
 
-class SslStream {
+class _SslStream {
   bool _eof;
 
   SSL *_ssl;
 public:
-  SslStream();
+  _SslStream();
 
-  void operator =(SslStream&& stream);
+  void operator =(_SslStream&& stream);
   void open(int fd, SSL_CTX *ctx);
 
   int operator >>(std::vector<unsigned char>& buf);
@@ -51,4 +51,7 @@ public:
   void flush();
   int fd();
 };
+
+#define SslStream  _SslStream,  int, SSL_CTX*
+#define FileStream _FileStream, int
 #endif

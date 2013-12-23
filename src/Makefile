@@ -12,7 +12,7 @@ LDIR =../lib
 
 LIBS= -lpthread -ldl -lssl -lcrypto `mysql_config --libs`
 
-_DEPS = main.h authenticate.h database.h file.h stream.h proxy.h server.h
+_DEPS = main.h authenticate.h database.h file.h stream.h proxy.h server.h log.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = database.o authenticate.o sql_connect.o ssl_stream.o file_stream.o log.o server.o proxy.o main.o#hellofunc.o 

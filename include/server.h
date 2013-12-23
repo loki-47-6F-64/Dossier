@@ -40,20 +40,19 @@ private:
   static SSL_CTX *_ssl_ctx;
 public:
   // Needs to be called before starting server
-  static void init(std::string& certPath, std::string& keyPath) {
+  static int init(std::string& certPath, std::string& keyPath) {
     SSL_library_init();
     OpenSSL_add_all_algorithms();
     SSL_load_error_strings();
 
     _ssl_ctx = SSL_CTX_new(SSLv3_server_method());
 
-    if(_loadCertificates(certPath.c_str(), keyPath.c_str())) {
-      ERR_print_errors_fp(stderr);
-    }
+    return _loadCertificates(certPath.c_str(), keyPath.c_str());
   }
 private:
 
   static int  _loadCertificates(const char *certPath, const char *keyPath) {
+
     if(SSL_CTX_use_certificate_file(_ssl_ctx, certPath, SSL_FILETYPE_PEM) <= 0) {
       return -1;
     }

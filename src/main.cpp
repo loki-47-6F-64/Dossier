@@ -10,6 +10,7 @@
 #include "database.h"
 typedef unsigned char byte;
 
+thread_local char err_buf[MAX_ERROR_BUFFER];
 #define ROOT_SERVER "/home/loki/keys/server/"
 void start_server() {
 	Server s;
@@ -18,17 +19,18 @@ void start_server() {
     std::unique_ptr<requestBase> req = getRequest(&client);
 
     if(req.get() == nullptr) {
-      Log::Warning("Unknown request.");
+      log(warning, "Unknown request.");
       return;
     }
     if(req->insert(&client) || 
        req->exec())
     {
-      Log::Warning(req->err_msg);
+      log(warning, req->err_msg);
     }
   }
   ) < 0) {
-		FATAL_ERROR("Can't set listener:", errno);
+    strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+		log(error, "Can't set listener: ", err_buf);
 	}
 
   if(s.addListener(8081, 20, [&](sslFile &&client) {
@@ -43,7 +45,8 @@ void start_server() {
     DEBUG_LOG("Finished copy");
   }
   ) < 0) {
-    FATAL_ERROR("Can't set listener:", errno);
+    strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    log(error, "Can't set listener: ", err_buf);
   }
 
 	s();
@@ -70,12 +73,9 @@ namespace config {
 };
 
 int main() {
-	Log::open("out.log");
-
-  Server::init(config::server.certPath, config::server.keyPath);
-  start_server();
-
-	Log::close();
-
+  log_open("out.log");
+  if(!Server::init(config::server.certPath, config::server.keyPath)) {
+    start_server();
+  }
   return 0;
 }

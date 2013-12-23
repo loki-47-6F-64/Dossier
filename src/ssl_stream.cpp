@@ -3,16 +3,16 @@
 
 #include "stream.h"
 
-SslStream::SslStream() : _eof(false), _ssl(nullptr) {}
+_SslStream::_SslStream() : _eof(false), _ssl(nullptr) {}
 
-void SslStream::open(int fd, SSL_CTX *ssl_ctx) {
+void _SslStream::open(int fd, SSL_CTX *ssl_ctx) {
   _ssl = SSL_new(ssl_ctx);
 
   SSL_accept(_ssl);
   SSL_set_fd(_ssl, fd);
 }
 
-void SslStream::operator=(SslStream&& stream) {
+void _SslStream::operator=(_SslStream&& stream) {
   this->_eof =  stream._eof;
   this->_ssl =  stream._ssl;
 
@@ -20,7 +20,7 @@ void SslStream::operator=(SslStream&& stream) {
   stream._eof = true;
 }
 
-int SslStream::operator>>(std::vector<unsigned char>& buf) {
+int _SslStream::operator>>(std::vector<unsigned char>& buf) {
   int bytes_read;
 
   if((bytes_read = SSL_read(_ssl, buf.data(), buf.size())) < 0) {
@@ -36,16 +36,16 @@ int SslStream::operator>>(std::vector<unsigned char>& buf) {
   return 0;
 }
 
-int SslStream::operator<<(std::vector<unsigned char>&buf) {
+int _SslStream::operator<<(std::vector<unsigned char>&buf) {
   return SSL_write(_ssl, buf.data(), buf.size());
 }
 
-int SslStream::access(std::string& url) {
+int _SslStream::access(std::string& url) {
   // Todo: implement access
   return 0;
 }
 
-void SslStream::seal() {
+void _SslStream::seal() {
   // fd is stored in _ssl
   int _fd = fd();
 
@@ -54,8 +54,8 @@ void SslStream::seal() {
   ::close(_fd);  
 }
 
-void SslStream::flush() {}
+void _SslStream::flush() {}
 
-int SslStream::fd() { return SSL_get_fd(_ssl); }
-bool SslStream::is_open() { return _ssl != nullptr; }
-bool SslStream::eof() { return _eof; }
+int _SslStream::fd() { return SSL_get_fd(_ssl); }
+bool _SslStream::is_open() { return _ssl != nullptr; }
+bool _SslStream::eof() { return _eof; }
