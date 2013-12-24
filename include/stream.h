@@ -37,7 +37,7 @@ public:
   _SslStream();
 
   void operator =(_SslStream&& stream);
-  void open(int fd, SSL_CTX *ctx);
+  void open(SSL *ssl);
 
   int operator >>(std::vector<unsigned char>& buf);
   int operator <<(std::vector<unsigned char>& buf);
@@ -52,6 +52,6 @@ public:
   int fd();
 };
 
-#define SslStream  _SslStream,  int, SSL_CTX*
+#define SslStream  _SslStream,  SSL*
 #define FileStream _FileStream, int
 #endif

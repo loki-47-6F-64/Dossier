@@ -5,11 +5,8 @@
 
 _SslStream::_SslStream() : _eof(false), _ssl(nullptr) {}
 
-void _SslStream::open(int fd, SSL_CTX *ssl_ctx) {
-  _ssl = SSL_new(ssl_ctx);
-
-  SSL_accept(_ssl);
-  SSL_set_fd(_ssl, fd);
+void _SslStream::open(SSL *ssl) {
+  _ssl = ssl;
 }
 
 void _SslStream::operator=(_SslStream&& stream) {

@@ -5,16 +5,30 @@
 #include <vector>
 #include <mutex>
 
+#include <memory>
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
 #include "file.h"
+
+class Certificate {
+  Certificate(SSL *ssl);
+  ~Certificate();
+};
+
+struct Client {
+  SSL *ssl;
+
+  std::unique_ptr<sslFile> socket;
+};
+
 class Server {
 	// Should the server continue?
 	bool _continue;
 
 	std::vector<pollfd> _listenfd;
-  std::vector<std::function<void(sslFile&&)>> _action;
+  std::vector<std::function<void(Client&&)>> _action;
 
 	std::mutex _add_listen;
 public:
@@ -25,7 +39,7 @@ public:
 	void operator() ();
 
 	// Returns -1 on failure
-	int addListener(uint16_t port, int max_parallel, std::function<void(sslFile&&)> f);
+	int addListener(uint16_t port, int max_parallel, std::function<void(Client&&)> f);
 	void removeListener(int fd);
 
 	void stop();
@@ -39,6 +53,23 @@ private:
 private:
   static SSL_CTX *_ssl_ctx;
 public:
+  static std::string getCN(const SSL *ssl) {
+    X509 *cert = SSL_get_peer_certificate(ssl);
+    char *pos, *ch = cert->name;
+
+    while(*ch) {
+      if(*ch == '/')
+        pos = ch;
+      ++ch;
+    }
+
+    // TODO: check if it is legal to use '/' in CN
+    std::string cn = ch - pos > 4 ? pos+4 : "";
+
+    
+    return cn;
+  }
+
   // Needs to be called before starting server
   static int init(std::string& certPath, std::string& keyPath) {
     SSL_library_init();

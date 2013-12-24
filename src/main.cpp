@@ -8,6 +8,7 @@
 #include "server.h"
 #include "proxy.h"
 #include "database.h"
+
 typedef unsigned char byte;
 
 thread_local char err_buf[MAX_ERROR_BUFFER];
@@ -15,15 +16,44 @@ thread_local char err_buf[MAX_ERROR_BUFFER];
 void start_server() {
 	Server s;
 
-	if(s.addListener(config::server.port, 20, [&](sslFile &&client) {
-    std::unique_ptr<requestBase> req = getRequest(&client);
+	if(s.addListener(config::server.port, 20, [&](Client &&client) {
+    Database db;
 
+    if(db.err_msg) {
+      client.socket->append(_response::INTERNAL_ERROR);
+      client.socket->append("Could not connect to database.");
+
+      client.socket->out();
+
+      log(error, "Could not connect to database: ", db.err_msg);
+      return;
+    }
+
+    std::string cn = Server::getCN(client.ssl);
+    int64_t idUser = db.validateUser(cn);
+
+    if(db.err_msg) {
+      client.socket->append(_response::INTERNAL_ERROR);
+
+      client.socket->append("User ");
+      client.socket->append(cn);
+      client.socket->append(" not found");
+
+      client.socket->out();
+
+      log(error, "User ", cn, " not found.");
+      return;
+    }
+
+    std::unique_ptr<requestBase> req = getRequest(client.socket.get());
+
+    req->idUser = idUser;
     if(req.get() == nullptr) {
       log(warning, "Unknown request.");
       return;
     }
-    if(req->insert(&client) || 
-       req->exec())
+    if(req->insert(client.socket.get()) || 
+       req->exec(db))
     {
       log(warning, req->err_msg);
     }
@@ -33,14 +63,14 @@ void start_server() {
 		log(error, "Can't set listener: ", err_buf);
 	}
 
-  if(s.addListener(8081, 20, [&](sslFile &&client) {
+  if(s.addListener(8081, 20, [&](Client &&client) {
     DEBUG_LOG("Started Copy...");
 
     ioFile echo { 2, STDOUT_FILENO };
 
     echo.close_after_delete = false;
 
-    client.copy<ioFile>(echo);
+    client.socket->copy<ioFile>(echo);
 
     DEBUG_LOG("Finished copy");
   }

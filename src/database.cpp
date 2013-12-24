@@ -37,7 +37,7 @@ int Database::newUser(std::string &username,
 	return 0;
 }
 
-int64_t Database::validateUser(std::string &username, std::string &hash) {
+int64_t Database::validateUser(std::string& username) {
 	std::ostringstream query;
 
 	query << "SELECT 1 FROM user WHERE username='" << 

@@ -28,8 +28,7 @@ public:
 	int64_t newDocument(int64_t idUser, std::string &company);
 
   // Return id user
-	int64_t validateUser(std::string &username,
-									 std::string &hash);
+	int64_t validateUser(std::string& username);
 
 	int newUser(std::string &username,
 									std::string &email,

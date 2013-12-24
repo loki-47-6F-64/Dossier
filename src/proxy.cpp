@@ -1,22 +1,8 @@
 #include "main.h"
 #include "proxy.h"
 
-#include "authenticate.h"
-
-enum _req_code {
-  SEARCH,
-  DOWNLOAD,
-  UPLOAD,
-  NEW_COMPANY,
-  AUTHENTICATE
-};
-
-enum _response {
-  OK,
-  INTERNAL_ERROR,
-  CORRUPT_REQUEST,
-  UNAUTHORIZED
-};
+#include "file.h"
+#include "database.h"
 
 std::unique_ptr<requestBase> getRequest(sslFile *socket) {
   std::unique_ptr<requestBase> _req;
@@ -33,9 +19,6 @@ std::unique_ptr<requestBase> getRequest(sslFile *socket) {
     case _req_code::NEW_COMPANY:
       _req = std::unique_ptr<requestNewCompany>(new requestNewCompany());
       break;
-    case _req_code::AUTHENTICATE:
-      _req = std::unique_ptr<requestAuthenticate>(new requestAuthenticate());
-    break;
 	}
   return _req;
 }
@@ -81,30 +64,12 @@ int requestBase::_customAppend(std::string &buf, int max) {
 	return result;
 }
 
-int requestAuthenticate::insert(sslFile *_socket) {
-  DEBUG_LOG("Parse authenticate request");
-
-  this->_socket = _socket;
-
-  if(_customAppend(username, MAX_USERNAME) ||
-     _customAppend(password,  MAX_PASSWORD))
-  {
-    return -1;
-  }
-
-  DEBUG_LOG(username.c_str());
-  DEBUG_LOG(password.c_str());
-
-  return 0;
-}
-
 int requestSearch::insert(sslFile *_socket) {
 	DEBUG_LOG("Parse search request");
 
 	this->_socket = _socket;
 
-	if(_customAppend(token, MAX_TOKEN) ||
-		 _customAppend(company,  MAX_COMPANY))
+	if(_customAppend(company,  MAX_COMPANY))
   {
     return -1;
   }
@@ -124,7 +89,6 @@ int requestSearch::insert(sslFile *_socket) {
 		keywords.push_back(std::move(tmp));
 	}
 
-  DEBUG_LOG(token.c_str());
   DEBUG_LOG(company.c_str());
 
   for(auto& keyword : keywords) {
@@ -138,14 +102,12 @@ int requestDownload::insert(sslFile *_socket) {
 
 	this->_socket = _socket;
 
-	if(_customAppend(token, MAX_TOKEN) ||
-     _customAppend(idPage)                 ||
+  if(_customAppend(idPage) ||
      _customAppend(company,  MAX_COMPANY))
   {
     return -1;
   }
 
-  DEBUG_LOG(token.c_str());
   DEBUG_LOG(idPage);
   DEBUG_LOG(company.c_str());
 
@@ -157,8 +119,7 @@ int requestUpload::insert(sslFile *_socket) {
 
 	this->_socket = _socket;
 
-	if(_customAppend(token, MAX_TOKEN) ||
-     _customAppend(company,  MAX_COMPANY) ||
+  if(_customAppend(company,  MAX_COMPANY) ||
      _customAppend(size))
   {
     return -1;
@@ -172,179 +133,103 @@ int requestNewCompany::insert(sslFile *_socket) {
 
   this->_socket = _socket;
 
-  if(_customAppend(token, MAX_TOKEN) ||
-     _customAppend(name,  MAX_COMPANY))
+  if(_customAppend(name,  MAX_COMPANY))
   { 
     return -1;
   }
 
-  DEBUG_LOG(token.c_str());
   DEBUG_LOG(name.c_str());
 
   return 0;
 }
 
-int requestAuthenticate::exec() {
-  DEBUG_LOG("Execute authenticate request");
-
-  Database db;
-  Authenticater auth(&db);
-
-  std::string token = auth.validate(username, password);
-
-  _socket->getCache().clear();
-  if(!auth.err_msg) {
-    // Return token
-    _socket->append(_response::OK);
-    _socket->append(token);
-    _socket->out();
-
-    return 0;
-  }
-
-  _socket->append(_response::INTERNAL_ERROR);
-  _socket->append("Username/Password is incorrect");
-  _socket->out();
-
-  err_msg = auth.err_msg;
-  return -1;
-}
-
-int requestSearch::exec() {
+int requestSearch::exec(Database &db) {
   DEBUG_LOG("Execute search request");
 
-  Database db;
+  _socket->getCache().clear();
+  std::vector<meta_doc> result = db.search(idUser, company);
+ 
+  _socket->append(_response::OK);
+  for(auto& doc : result) {
+    _socket->append(doc.company);
+    _socket->append('\0');
+
+    _socket->append(std::to_string(doc.id));
+    _socket->append('\0');
+  }
+
+  _socket->out();
+     
+  return 0;
+}
+
+int requestDownload::exec(Database &db) {
+  DEBUG_LOG("Excecute download requests");
+
+  meta_doc result = db.getFile(idUser, idPage);
+  
+  DEBUG_LOG(result.company.c_str());
+  DEBUG_LOG(result.id);
+
+  return 0;
+}
+
+int requestUpload::exec(Database &db) {
+  DEBUG_LOG("Execute upload request");
+
+  int64_t idPage = db.newDocument(idUser, company);
+
   if(db.err_msg) {
     err_msg = db.err_msg;
+
+    _socket->getCache().clear();
+
+    _socket->append(_response::INTERNAL_ERROR);
+    _socket->append(err_msg);
+    _socket->out();
+  }
+   
+  /* root/idUser/ */
+  std::string path = config::storage.root;
+  if(path.back() != '/') {
+    path += '/';
+  }
+/*  path.append(std::to_string(idUser));
+  path += '/';*/
+
+  path.append(std::to_string(idPage));
+  path += ".txt";
+
+  ioFile out(1);
+  out.access(path);
+
+  _socket->copy<ioFile>(out, size);
+
+
+  _socket->getCache().clear();
+
+  _socket->append(_response::OK);
+  _socket->out();
+
+  return 0;
+}
+
+int requestNewCompany::exec(Database &db) {
+  DEBUG_LOG("Execute new Company request");
+
+  _socket->getCache().clear();
+  if(db.newCompany(name, idUser)) {
+    err_msg = db.err_msg;
+    _socket->append(_response::INTERNAL_ERROR);
+    _socket->append(err_msg);
+
+    _socket->out();
+
     return -1;
   }
 
-  Authenticater auth(&db);
-
-  int64_t id = auth.validate(token);
-
-  _socket->getCache().clear();
-  if(!auth.err_msg) {
-    std::vector<meta_doc> result = db.search(id, company);
- 
-    _socket->append(_response::OK);
-    for(auto& doc : result) {
-      _socket->append(doc.company);
-      _socket->append('\0');
-
-      _socket->append(std::to_string(doc.id));
-      _socket->append('\0');
-    }
-
-    _socket->out();
-       
-    return 0;
-  }
-
-  _socket->append(_response::UNAUTHORIZED);
-  _socket->append("Unauthorized access");
+  _socket->append(_response::OK);
   _socket->out();
 
-  err_msg = "user validation failed.";
-
-  return -1;
-}
-
-int requestDownload::exec() {
-  DEBUG_LOG("Excecute download requests");
-
-  Database db;
-  Authenticater auth(&db);
-
-  int64_t id = auth.validate(token);
-
-  if(!auth.err_msg) {
-    meta_doc result = db.getFile(id, idPage);
-   
-    DEBUG_LOG(result.company.c_str());
-    DEBUG_LOG(result.id);
-
-    return 0;
-  }
-
-  _socket->append(_response::UNAUTHORIZED);
-  _socket->append("Unauthorized access");
-  _socket->out();
-
-  err_msg = "user validation failed.";
-
-	return -1;
-}
-
-int requestUpload::exec() {
-  DEBUG_LOG("Execute upload request");
-
-  Database db;
-  Authenticater auth(&db);
-
-  int64_t idUser = auth.validate(token);
-
-  if(!auth.err_msg) {
-    int64_t idPage = db.newDocument(idUser, company);
-
-        
-    /* root/idUser/ */
-    std::string path = config::storage.root;
-    if(path.back() != '/') {
-      path += '/';
-    }
-/*    path.append(std::to_string(idUser));
-    path += '/';*/
-
-    path.append(std::to_string(idPage));
-    path += ".txt";
-
-    sslFile out(1);
-    out.access(path);
-
-    _socket->copy(out, size);
-
-
-    DEBUG_LOG("Copied out");
-    _socket->getCache().clear();
-
-    _socket->append(_response::OK);
-    _socket->out();
-
-    return 0;
-  }
-
-  _socket->append(_response::UNAUTHORIZED);
-  _socket->append(auth.err_msg);
-  _socket->append('\0');
-  _socket->out();
-
-  err_msg = "user validation failed.";
-
-	return -1;
-}
-
-int requestNewCompany::exec() {
-  DEBUG_LOG("Execute new Company request");
-  Database db;
-
-  Authenticater auth(&db);
-
-  int64_t idUser = auth.validate(token);
-
-  _socket->getCache().clear();
-  if(!auth.err_msg) {
-    db.newCompany(name, idUser);
-    _socket->append(_response::OK);
-    _socket->out();
-
-    return 0;
-  }
-
-  _socket->append(_response::UNAUTHORIZED);
-  _socket->append(auth.err_msg);
-  _socket->append('\0');
-  _socket->out();
-
-  return -1;
+  return 0;
 }

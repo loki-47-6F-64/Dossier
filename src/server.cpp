@@ -17,7 +17,7 @@ void Server::operator() () {
 	_listen();
 }
 
-int Server::addListener(uint16_t port, int max_parallel, std::function<void(sslFile&&)> f) {
+int Server::addListener(uint16_t port, int max_parallel, std::function<void(Client&&)> f) {
 	sockaddr_in server {
 		config::server.inet,
 		htons(port),
@@ -96,10 +96,15 @@ void Server::_listen() {
 				if(poll.revents == POLLIN) {
 					DEBUG_LOG("Accepting client");
 	
-          sslFile client(1, accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size), Server::_ssl_ctx);
-      		// Accept new client
-          std::thread t(_action[x], std::move(client));
+          int clientFd = accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size);
+          SSL *ssl = SSL_new(Server::_ssl_ctx);
 
+          SSL_accept(ssl);
+          SSL_set_fd(ssl, clientFd);
+
+          Client client { ssl, std::unique_ptr<sslFile>(new sslFile(1, ssl)) };
+
+          std::thread t(_action[x], std::move(client));
           t.detach();
 				}
 			}
