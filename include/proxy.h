@@ -23,6 +23,7 @@ class Database;
 
 enum _req_code {
   SEARCH,
+  LIST_COMPANIES,
   DOWNLOAD,
   UPLOAD,
   NEW_COMPANY
@@ -89,6 +90,12 @@ class requestNewCompany : public requestBase {
 public:
   std::string name;
 
+  int insert(sslFile *_socket);
+  int exec(Database& db);
+};
+
+class requestListCompanies : public requestBase {
+public:
   int insert(sslFile *_socket);
   int exec(Database& db);
 };

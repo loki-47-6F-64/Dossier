@@ -11,6 +11,7 @@
 struct meta_doc {
   int64_t id;
   std::string company;
+  std::string created;
 };
 
 class Database {
@@ -35,6 +36,8 @@ public:
 								  std::string &hash);
 
   int newCompany(std::string &name, int64_t idUser);
+
+  std::vector<std::string> listCompany(int64_t idUser);
 };
 
 #endif

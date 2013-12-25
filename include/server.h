@@ -11,17 +11,19 @@
 #include <openssl/err.h>
 
 #include "file.h"
-
-class Certificate {
-  Certificate(SSL *ssl);
-  ~Certificate();
-};
-
 struct Client {
   SSL *ssl;
 
   std::unique_ptr<sslFile> socket;
 };
+
+class X509_Free {
+public:
+  void operator()(X509 *cert) {
+    X509_free(cert);
+  }
+};
+typedef std::unique_ptr<X509, X509_Free> Certificate;
 
 class Server {
 	// Should the server continue?
@@ -56,9 +58,8 @@ public:
   static std::string getCN(const SSL *ssl) {
     std::string cn;
 
-    X509 *cert = SSL_get_peer_certificate(ssl);
-
-    if(!cert) {
+    Certificate cert(SSL_get_peer_certificate(ssl));
+    if(!cert.get()) {
       return cn;
     }
 
@@ -73,7 +74,6 @@ public:
     // TODO: check if it is legal to use '/' in CN
     cn = ch - pos > 4 ? pos+4 : "";
 
-    
     return cn;
   }
 

@@ -66,7 +66,7 @@ int64_t Database::validateUser(std::string& username) {
 
 std::vector<meta_doc> Database::search(int64_t idUser, std::string &company) {
   std::ostringstream query;
-  query << "SELECT doc.idPage, Company.name FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" << idUser << '\'';
+  query << "SELECT doc.idPage, Company.name, doc.created FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" << idUser << '\'';
   if(!company.empty()) {
     query << " AND Company.name='" << company << '\'';
   }
@@ -80,7 +80,11 @@ std::vector<meta_doc> Database::search(int64_t idUser, std::string &company) {
   _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
     std::string idPage(*row, *lengths);
 
-    meta_doc tmp { std::stol(idPage), std::string(row[1], lengths[1]) };
+    meta_doc tmp {
+      std::stol(idPage),
+      std::string(row[1], lengths[1]),
+      std::string(row[2], lengths[2])
+    };
 
     result.push_back(std::move(tmp));
   });
@@ -135,4 +139,22 @@ int Database::newCompany(std::string &name, int64_t idUser) {
     return -1;
   }
   return 0;
+}
+
+std::vector<std::string> Database::listCompany(int64_t idUser) {
+  std::ostringstream query;
+
+  query << "SELECT name FROM Company WHERE user_idUser='" << idUser << "'";
+
+  std::vector<std::string> result;
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return result;
+  }
+
+  _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
+    result.push_back(std::string(*row, *lengths));
+  });
+
+  return result;
 }

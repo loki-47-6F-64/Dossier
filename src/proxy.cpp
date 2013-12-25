@@ -10,6 +10,9 @@ std::unique_ptr<requestBase> getRequest(sslFile *socket) {
 		case _req_code::SEARCH:
 			_req = std::unique_ptr<requestSearch>(new requestSearch());
 			break;
+    case _req_code::LIST_COMPANIES:
+      _req = std::unique_ptr<requestListCompanies>(new requestListCompanies());
+      break;
 		case _req_code::DOWNLOAD:
 			_req = std::unique_ptr<requestDownload>(new requestDownload());
 			break;
@@ -62,6 +65,12 @@ int requestBase::_customAppend(std::string &buf, int max) {
     });
   }
 	return result;
+}
+
+int requestListCompanies::insert(sslFile *_socket) {
+  this->_socket = _socket;
+
+  return 0;
 }
 
 int requestSearch::insert(sslFile *_socket) {
@@ -151,6 +160,9 @@ int requestSearch::exec(Database &db) {
  
   _socket->append(_response::OK);
   for(auto& doc : result) {
+    _socket->append(doc.created);
+    _socket->append('\0');
+
     _socket->append(doc.company);
     _socket->append('\0');
 
@@ -194,8 +206,8 @@ int requestUpload::exec(Database &db) {
   if(path.back() != '/') {
     path += '/';
   }
-/*  path.append(std::to_string(idUser));
-  path += '/';*/
+  path.append(std::to_string(idUser));
+  path += '_';
 
   path.append(std::to_string(idPage));
   path += ".txt";
@@ -229,6 +241,34 @@ int requestNewCompany::exec(Database &db) {
   }
 
   _socket->append(_response::OK);
+  _socket->out();
+
+  return 0;
+}
+
+int requestListCompanies::exec(Database &db) {
+  DEBUG_LOG("Execute list Company request");
+
+  _socket->getCache().clear();
+  std::vector<std::string> companies = db.listCompany(idUser);
+
+  if(db.err_msg) {
+    err_msg = db.err_msg;
+    _socket->append(_response::INTERNAL_ERROR);
+    _socket->append(err_msg);
+
+    _socket->out();
+
+    return -1;
+  }
+
+  _socket->append(_response::OK);
+
+  for(auto& company : companies) {
+    _socket->append(company);
+    _socket->append('\0');
+  }
+
   _socket->out();
 
   return 0;
