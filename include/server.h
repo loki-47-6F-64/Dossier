@@ -54,7 +54,14 @@ private:
   static SSL_CTX *_ssl_ctx;
 public:
   static std::string getCN(const SSL *ssl) {
+    std::string cn;
+
     X509 *cert = SSL_get_peer_certificate(ssl);
+
+    if(!cert) {
+      return cn;
+    }
+
     char *pos, *ch = cert->name;
 
     while(*ch) {
@@ -64,7 +71,7 @@ public:
     }
 
     // TODO: check if it is legal to use '/' in CN
-    std::string cn = ch - pos > 4 ? pos+4 : "";
+    cn = ch - pos > 4 ? pos+4 : "";
 
     
     return cn;
@@ -84,19 +91,19 @@ private:
 
   static int  _loadCertificates(const char *certPath, const char *keyPath) {
 
-    if(SSL_CTX_use_certificate_file(_ssl_ctx, certPath, SSL_FILETYPE_PEM) <= 0) {
+    if(SSL_CTX_use_certificate_file(_ssl_ctx, certPath, SSL_FILETYPE_PEM) != 1) {
       return -1;
     }
 
-    if(SSL_CTX_use_PrivateKey_file(_ssl_ctx, keyPath, SSL_FILETYPE_PEM) <= 0) {
+    if(SSL_CTX_use_PrivateKey_file(_ssl_ctx, keyPath, SSL_FILETYPE_PEM) != 1) {
       return -1;
     }
 
-    if(!SSL_CTX_check_private_key(_ssl_ctx)) {
+    if(SSL_CTX_check_private_key(_ssl_ctx) != 1) {
       return -1;
     }
 
-    if(!SSL_CTX_load_verify_locations(_ssl_ctx, certPath, NULL)) {
+    if(SSL_CTX_load_verify_locations(_ssl_ctx, certPath, NULL) != 1) {
       return -1;
     }
 

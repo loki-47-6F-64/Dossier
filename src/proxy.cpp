@@ -159,7 +159,7 @@ int requestSearch::exec(Database &db) {
   }
 
   _socket->out();
-     
+ 
   return 0;
 }
 

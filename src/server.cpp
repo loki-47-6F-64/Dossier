@@ -99,8 +99,8 @@ void Server::_listen() {
           int clientFd = accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size);
           SSL *ssl = SSL_new(Server::_ssl_ctx);
 
-          SSL_accept(ssl);
           SSL_set_fd(ssl, clientFd);
+          SSL_accept(ssl);
 
           Client client { ssl, std::unique_ptr<sslFile>(new sslFile(1, ssl)) };
 

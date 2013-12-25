@@ -25,7 +25,7 @@ void start_server() {
 
       client.socket->out();
 
-      log(error, "Could not connect to database: ", db.err_msg);
+      log(error, db.err_msg);
       return;
     }
 
