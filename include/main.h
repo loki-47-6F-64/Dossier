@@ -5,9 +5,9 @@
 
 #ifdef _DEBUG_DOSSIER
 	#define ON_DEBUG( x ) x
-	#define DEBUG_LOG( x ) log(debug, __FILE__, ':', __LINE__,':', x)
+	#define DEBUG_LOG( ... ) log(debug, __FILE__, ':', __LINE__,':', __VA_ARGS__)
 #else
-	#define ON_DEBUG( x )
+	#define ON_DEBUG( ... )
 	#define DEBUG_LOG( x ) do {} while(0)
 #endif
 

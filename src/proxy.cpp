@@ -215,8 +215,8 @@ int requestUpload::exec(Database &db) {
   ioFile out(1);
   out.access(path);
 
+  DEBUG_LOG("Copying file: ", path.c_str(), " of size: ", size);
   _socket->copy<ioFile>(out, size);
-
 
   _socket->getCache().clear();
 
