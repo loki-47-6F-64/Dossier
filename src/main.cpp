@@ -29,7 +29,7 @@ void start_server() {
       return;
     }
 
-    std::string cn = Server::getCN(client.ssl);
+    std::string cn = getCN(client.ssl);
     int64_t idUser = db.validateUser(cn);
 
     if(db.err_msg) {
@@ -104,8 +104,11 @@ namespace config {
 
 int main() {
   log_open("out.log");
-  if(!Server::init(config::server.certPath, config::server.keyPath)) {
-    start_server();
+  if(Server::init(config::server.certPath, config::server.keyPath)) {
+    log(error, "Failed to init ssl.");
+    return -1;
   }
+
+  start_server();
   return 0;
 }

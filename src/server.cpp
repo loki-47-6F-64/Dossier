@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-SSL_CTX *Server::_ssl_ctx;
+Context Server::_ssl_ctx;
 void Server::operator() () {
 	if(isRunning())
 		return;
@@ -96,13 +96,7 @@ void Server::_listen() {
 				if(poll.revents == POLLIN) {
 					DEBUG_LOG("Accepting client");
 	
-          int clientFd = accept(poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size);
-          SSL *ssl = SSL_new(Server::_ssl_ctx);
-
-          SSL_set_fd(ssl, clientFd);
-          SSL_accept(ssl);
-
-          Client client { ssl, std::unique_ptr<sslFile>(new sslFile(1, ssl)) };
+          Client client = ssl_accept(Server::_ssl_ctx.get(), poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size);
 
           std::thread t(_action[x], std::move(client));
           t.detach();
