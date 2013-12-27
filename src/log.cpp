@@ -9,8 +9,7 @@ std::mutex _LogStreamBase::_lock;
 char _LogStreamBase::_date[DATE_BUFFER_SIZE];
 
 void log(LogFile& logFile) {
-  logFile.append('\n');
-  logFile.out();
+  logFile.append('\n').out();
 }
 
 void log_open(const char *logPath) {
@@ -19,6 +18,5 @@ void log_open(const char *logPath) {
   info   .access(logPath);
   debug  .access(logPath);
 
-  info.append("Opened log.\n");
-  info.out();
+  info.append("Opened log.\n").out();
 }

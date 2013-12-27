@@ -93,43 +93,53 @@ public:
   	return *_data_p++;
 	}
 
-  void eachLoaded(std::function<bool(unsigned char)> f) {
+  int eachLoaded(std::function<bool(unsigned char)> f) {
     if(end_of_buffer()) {
-      load(cacheSize);
+      if(load(cacheSize)) {
+        return -1;
+      }
     }
 
     while(!end_of_buffer()) {
       if(!f(*_data_p++))
         break;
     }
+
+    return 0;
   }
 	// Append buffer
-	inline void append(std::vector<unsigned char>& buffer) {
+	inline _File& append(std::vector<unsigned char>& buffer) {
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
+
+    return *this;
 	}
 
-	inline void append(std::string &buffer) {
+	inline _File& append(std::string &buffer) {
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
+
+    return *this;
 	}
 
-  inline void append(unsigned char ch) {
+  inline _File& append(unsigned char ch) {
     _cache.push_back(ch);
+
+    return *this;
   }
 
-  inline void append(char ch) {
-    append(static_cast<unsigned char>(ch));
+  inline _File& append(char ch) {
+    return append(static_cast<unsigned char>(ch));
   }
 
-  inline void append(long integer) {
-    append(std::to_string(integer));
+  inline _File& append(long integer) {
+    return append(std::to_string(integer));
   }
 
-  inline void append(int integer) {
-    append(std::to_string(integer));
+  inline _File& append(int integer) {
+    return append(std::to_string(integer));
   }
 
-  inline void append(std::string &&buffer) {
-    append(buffer);
+  inline _File& append(std::string &&buffer) {
+    return append(buffer);
   }
 
   int access(std::string &&path) {
@@ -153,17 +163,25 @@ public:
 
   /* Copies max bytes from this to out
      If max == -1 copy the whole file */
-  template<class Out=_File<Stream>>
-  void copy(Out &out, int64_t max = -1) {
+  template<class Out>
+  int copy(Out &out, int64_t max = -1) {
     std::vector<unsigned char> &cache = out.getCache();
 
     while(!eof() && max) {
-      eachLoaded([&](unsigned char data_p) {
+      int error;
+      error = eachLoaded([&](unsigned char data_p) {
         cache.push_back(data_p);
         return --max;
       });
+
+      if(error) {
+        return -1;
+      }
+
       out.out();
     }
+
+    return 0;
   }
 };
 

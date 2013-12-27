@@ -160,17 +160,14 @@ int requestSearch::exec(Database &db) {
  
   _socket->append(_response::OK);
   for(auto& doc : result) {
-    _socket->append(doc.created);
-    _socket->append('\0');
-
-    _socket->append(doc.company);
-    _socket->append('\0');
-
-    _socket->append(std::to_string(doc.id));
-    _socket->append('\0');
+    _socket->
+       append(doc.created).append('\0')
+      .append(doc.company).append('\0')
+      .append(std::to_string(doc.id)).append('\0');
   }
 
-  _socket->out();
+  _socket->
+    append('\0').out();
  
   return 0;
 }
@@ -196,9 +193,10 @@ int requestUpload::exec(Database &db) {
 
     _socket->getCache().clear();
 
-    _socket->append(_response::INTERNAL_ERROR);
-    _socket->append(err_msg);
-    _socket->out();
+    _socket->
+       append(_response::INTERNAL_ERROR)
+      .append(err_msg)
+      .out();
   }
    
   /* root/idUser/ */
@@ -216,12 +214,25 @@ int requestUpload::exec(Database &db) {
   out.access(path);
 
   DEBUG_LOG("Copying file: ", path.c_str(), " of size: ", size);
-  _socket->copy<ioFile>(out, size);
 
   _socket->getCache().clear();
 
-  _socket->append(_response::OK);
-  _socket->out();
+  // Attempt to copy file from client
+  if(_socket->copy(out, size)) {
+    strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    log(error, "Uploading failed: ", err_buf);
+
+    _socket->
+       append(_response::INTERNAL_ERROR)
+      .append("Uploading failed: ")
+      .append(err_buf)
+      .out();
+
+    return -1;
+  }
+
+  _socket->
+    append(_response::OK).out();
 
   return 0;
 }
@@ -232,16 +243,16 @@ int requestNewCompany::exec(Database &db) {
   _socket->getCache().clear();
   if(db.newCompany(name, idUser)) {
     err_msg = db.err_msg;
-    _socket->append(_response::INTERNAL_ERROR);
-    _socket->append(err_msg);
-
-    _socket->out();
+      _socket->
+        append(_response::INTERNAL_ERROR)
+        .append(err_msg)
+        .out();
 
     return -1;
   }
 
-  _socket->append(_response::OK);
-  _socket->out();
+  _socket->
+    append(_response::OK).out();
 
   return 0;
 }
@@ -254,10 +265,10 @@ int requestListCompanies::exec(Database &db) {
 
   if(db.err_msg) {
     err_msg = db.err_msg;
-    _socket->append(_response::INTERNAL_ERROR);
-    _socket->append(err_msg);
-
-    _socket->out();
+    _socket->
+       append(_response::INTERNAL_ERROR)
+      .append(err_msg)
+      .out();
 
     return -1;
   }
@@ -265,11 +276,13 @@ int requestListCompanies::exec(Database &db) {
   _socket->append(_response::OK);
 
   for(auto& company : companies) {
-    _socket->append(company);
-    _socket->append('\0');
+    _socket->
+       append(company)
+      .append('\0');
   }
 
-  _socket->out();
+  _socket->
+    append('\0').out();
 
   return 0;
 }

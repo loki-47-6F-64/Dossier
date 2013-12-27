@@ -20,10 +20,10 @@ void start_server() {
     Database db;
 
     if(db.err_msg) {
-      client.socket->append(_response::INTERNAL_ERROR);
-      client.socket->append("Could not connect to database.");
-
-      client.socket->out();
+      client.socket->
+         append(_response::INTERNAL_ERROR)
+        .append("Could not connect to database.")
+        .out();
 
       log(error, db.err_msg);
       return;
@@ -35,11 +35,11 @@ void start_server() {
     if(db.err_msg) {
       client.socket->append(_response::INTERNAL_ERROR);
 
-      client.socket->append("User ");
-      client.socket->append(cn);
-      client.socket->append(" not found");
-
-      client.socket->out();
+      client.socket->
+          append("User ")
+         .append(cn)
+         .append(" not found")
+         .out();
 
       log(error, "User ", cn, " not found.");
       return;
@@ -70,7 +70,7 @@ void start_server() {
 
     echo.close_after_delete = false;
 
-    client.socket->copy<ioFile>(echo);
+    client.socket->copy(echo);
 
     DEBUG_LOG("Finished copy");
   }
@@ -105,7 +105,13 @@ namespace config {
 int main() {
   log_open("out.log");
   if(Server::init(config::server.certPath, config::server.keyPath)) {
-    log(error, "Failed to init ssl.");
+    int err;
+
+    // Empty error queue
+    while((err = ERR_get_error())) {
+      ERR_error_string_n(err, err_buf, MAX_ERROR_BUFFER);
+      log(error, "Failed to init ssl:", err_buf);
+    }
     return -1;
   }
 
