@@ -20,12 +20,9 @@ void start_server() {
     Database db;
 
     if(db.err_msg) {
-      client.socket->
-         append(_response::INTERNAL_ERROR)
-        .append("Could not connect to database.")
-        .out();
+      print(*client.socket, "Could not connect to database.");
+      print(error, db.err_msg);
 
-      log(error, db.err_msg);
       return;
     }
 
@@ -33,15 +30,11 @@ void start_server() {
     int64_t idUser = db.validateUser(cn);
 
     if(db.err_msg) {
-      client.socket->append(_response::INTERNAL_ERROR);
+      print(*client.socket,
+        _response::INTERNAL_ERROR,
+        "User ", cn, " not found.");
 
-      client.socket->
-          append("User ")
-         .append(cn)
-         .append(" not found")
-         .out();
-
-      log(error, "User ", cn, " not found.");
+      print(error, "User ", cn, " not found.");
       return;
     }
 
@@ -49,18 +42,15 @@ void start_server() {
 
     req->idUser = idUser;
     if(req.get() == nullptr) {
-      log(warning, "Unknown request.");
+      print(warning, "Unknown request.");
       return;
     }
-    if(req->insert(client.socket.get()) || 
-       req->exec(db))
-    {
-      log(warning, req->err_msg);
-    }
+//    req->insert(client.socket.get());
+    req->exec(db);
   }
   ) < 0) {
     strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
-		log(error, "Can't set listener: ", err_buf);
+		print(error, "Can't set listener: ", err_buf);
 	}
 
   if(s.addListener(8081, 20, [&](Client &&client) {
@@ -76,7 +66,7 @@ void start_server() {
   }
   ) < 0) {
     strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
-    log(error, "Can't set listener: ", err_buf);
+    print(error, "Can't set listener: ", err_buf);
   }
 
 	s();
@@ -110,7 +100,7 @@ int main() {
     // Empty error queue
     while((err = ERR_get_error())) {
       ERR_error_string_n(err, err_buf, MAX_ERROR_BUFFER);
-      log(error, "Failed to init ssl:", err_buf);
+      print(error, "Failed to init ssl:", err_buf);
     }
     return -1;
   }

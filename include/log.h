@@ -51,6 +51,7 @@ public:
                _LogStreamBase::_date + DATE_BUFFER_SIZE -1 //omit '\0'
     ); 
 
+    buf.push_back('\n');
     return _stream << buf;
   }
 
@@ -88,11 +89,4 @@ extern LogFile error;
 extern LogFile warning;
 extern LogFile info;
 extern LogFile debug;
-
-void log(LogFile& logFile);
-template<class Out, class... Args>
-void log(LogFile& logFile, Out out, Args... params) {
-  logFile.append(out);
-  log(logFile, std::forward<Args>(params)...);
-}
 #endif

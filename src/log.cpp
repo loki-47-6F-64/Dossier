@@ -8,10 +8,6 @@ LogFile debug  (1024, " Debug: "  , -1);
 std::mutex _LogStreamBase::_lock;
 char _LogStreamBase::_date[DATE_BUFFER_SIZE];
 
-void log(LogFile& logFile) {
-  logFile.append('\n').out();
-}
-
 void log_open(const char *logPath) {
   error  .access(logPath);
   warning.access(logPath);

@@ -77,7 +77,7 @@ public:
 	// Write to file
 	inline int out() {
 		if((_stream << _cache) >= 0) {
-      _cache.clear();
+      clear();
       return 0;
     }
     return -1;
@@ -142,6 +142,12 @@ public:
     return append(buffer);
   }
 
+  inline _File& clear() {
+    _cache.clear();
+
+    return *this;
+  }
+
   int access(std::string &&path) {
     return access(path);
   }
@@ -185,6 +191,16 @@ public:
   }
 };
 
+template<class File>
+void print(File& file) {
+  file.out();
+}
+
+template<class File, class Out, class... Args>
+void print(File& file, Out out, Args... params) {
+  file.append(out);
+  print(file, std::forward<Args>(params)...);
+}
 typedef _File<FileStream> ioFile;
 typedef _File<SslStream> sslFile;
 #endif

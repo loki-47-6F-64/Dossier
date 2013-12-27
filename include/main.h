@@ -5,15 +5,13 @@
 
 #ifdef _DEBUG_DOSSIER
 	#define ON_DEBUG( x ) x
-	#define DEBUG_LOG( ... ) log(debug, __FILE__, ':', __LINE__,':', __VA_ARGS__)
+	#define DEBUG_LOG( ... ) print(debug, __FILE__, ':', __LINE__,':', __VA_ARGS__)
 #else
 	#define ON_DEBUG( ... )
 	#define DEBUG_LOG( x ) do {} while(0)
 #endif
 
-#include <fstream>
 #include <string>
-#include <mutex>
 
 #include <arpa/inet.h>
 
