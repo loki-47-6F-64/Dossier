@@ -16,8 +16,6 @@ constexpr int MAX_USERNAME = 16;
 // Don't want to read client indefinetely
 constexpr int MAX_KEYWORD    = 55;
 constexpr int MAX_PARAMETERS = 10;
-constexpr int MAX_TOKEN      = 255;
-constexpr int MAX_PASSWORD   = 255;
 
 class Database;
 
@@ -145,6 +143,7 @@ class requestSearch : public requestBase {
 public:
   requestSearch(sslFile *socket) : requestBase(socket){}
 	std::string company;
+  std::string year, month, day;
 
 	std::vector<std::string> keywords;
 

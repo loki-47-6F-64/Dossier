@@ -22,7 +22,9 @@ public:
 	Database();
 //	~Database();
 
-	std::vector<meta_doc> search(int64_t idUser, std::string &company);
+	std::vector<meta_doc> search(int64_t idUser, std::string &company,
+    std::string &year, std::string &month, std::string &day);
+
 	meta_doc getFile(int64_t idUser, int64_t idPage);
 
   // Create new meta_doc and return the id.

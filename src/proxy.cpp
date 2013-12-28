@@ -36,7 +36,13 @@ std::unique_ptr<requestBase> getRequest(sslFile *socket) {
 int requestSearch::exec(Database &db) {
   DEBUG_LOG("Execute search request");
 
-  if(load(company, MAX_COMPANY, keywords, MAX_PARAMETERS, MAX_KEYWORD)) {
+  if(load(
+      company, MAX_COMPANY,
+      year,  4,
+      month, 2,
+      day,   2,
+      keywords, MAX_PARAMETERS, MAX_KEYWORD))
+  {
     _socket->clear();
 
     print(*_socket,
@@ -48,7 +54,7 @@ int requestSearch::exec(Database &db) {
   }
 
   _socket->clear();
-  std::vector<meta_doc> result = db.search(idUser, company);
+  std::vector<meta_doc> result = db.search(idUser, company, year, month, day);
  
   _socket->append(_response::OK);
   for(auto& doc : result) {

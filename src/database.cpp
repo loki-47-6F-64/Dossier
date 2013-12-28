@@ -77,11 +77,25 @@ int64_t Database::validateUser(std::string& username) {
   return id;
 }
 
-std::vector<meta_doc> Database::search(int64_t idUser, std::string &company) {
+std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
+  std::string &year, std::string &month, std::string &day)
+{
   std::ostringstream query;
   query << "SELECT doc.idPage, Company.name, doc.created FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" << idUser << '\'';
   if(!company.empty()) {
     query << " AND Company.name='" << company << '\'';
+  }
+
+  if(!day.empty()) {
+    query << " AND DAY(doc.created)='" << day << '\'';
+  }
+
+  if(!month.empty()) {
+    query << " AND MONTH(doc.created)='" << month << '\'';
+  }
+
+  if(!year.empty()) {
+    query << " AND YEAR(doc.created)='" << year << '\'';
   }
 
   std::vector<meta_doc> result;
