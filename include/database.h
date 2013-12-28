@@ -26,7 +26,8 @@ public:
 	meta_doc getFile(int64_t idUser, int64_t idPage);
 
   // Create new meta_doc and return the id.
-	int64_t newDocument(int64_t idUser, std::string &company);
+ 	int64_t newDocument(int64_t idUser, std::string &company);
+  int removeDocument(int64_t idPage, int64_t idUser);
 
   // Return id user
 	int64_t validateUser(std::string& username);
@@ -36,6 +37,7 @@ public:
 								  std::string &hash);
 
   int newCompany(std::string &name, int64_t idUser);
+  int removeCompany(std::string &name, int64_t idUser);
 
   std::vector<std::string> listCompany(int64_t idUser);
 };

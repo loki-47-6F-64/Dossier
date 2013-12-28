@@ -37,6 +37,19 @@ int Database::newUser(std::string &username,
 	return 0;
 }
 
+int Database::removeDocument(int64_t idPage, int64_t idUser) {
+  std::ostringstream query;
+
+  query << "DELETE FROM Document WHERE idPage=" << idPage
+        << " AND user_idUser=" << idUser;
+
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return -1;
+  }
+  return 0;
+}
+
 int64_t Database::validateUser(std::string& username) {
 	std::ostringstream query;
 
@@ -138,6 +151,20 @@ int Database::newCompany(std::string &name, int64_t idUser) {
     err_msg = _sql.error();
     return -1;
   }
+  return 0;
+}
+
+int Database::removeCompany(std::string &name, int64_t idUser) {
+  std::ostringstream query;
+
+  query << "DELETE FROM Company WHERE name='" << name << "'"
+        << "AND user_idUser='" << idUser << "'";
+
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return -1;
+  }
+
   return 0;
 }
 

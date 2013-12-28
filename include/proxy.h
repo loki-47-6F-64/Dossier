@@ -26,7 +26,9 @@ enum _req_code {
   LIST_COMPANIES,
   DOWNLOAD,
   UPLOAD,
-  NEW_COMPANY
+  NEW_COMPANY,
+  REMOVE_COMPANY,
+  REMOVE_DOCUMENT
 };
 
 enum _response {
@@ -36,8 +38,11 @@ enum _response {
 };
 
 class requestBase {
-public:
+protected:
 	sslFile *_socket;
+public:
+  requestBase(sslFile *socket) : _socket(socket){}
+
   int64_t idUser;
 
 	const char *err_msg = nullptr;
@@ -115,6 +120,8 @@ public:
 // Client upload
 class requestUpload : public requestBase {
 public:
+  requestUpload(sslFile *socket) : requestBase(socket){}
+
 	std::string company;
 
   int64_t size;
@@ -125,6 +132,8 @@ public:
 // Client download
 class requestDownload : public requestBase {
 public:
+  requestDownload(sslFile *socket) : requestBase(socket){}
+
   int64_t idPage;
 
 	std::string company;
@@ -134,6 +143,7 @@ public:
 
 class requestSearch : public requestBase {
 public:
+  requestSearch(sslFile *socket) : requestBase(socket){}
 	std::string company;
 
 	std::vector<std::string> keywords;
@@ -143,6 +153,7 @@ public:
 
 class requestNewCompany : public requestBase {
 public:
+  requestNewCompany(sslFile *socket) : requestBase(socket){}
   std::string name;
 
   int exec(Database& db);
@@ -150,8 +161,22 @@ public:
 
 class requestListCompanies : public requestBase {
 public:
+  requestListCompanies(sslFile *socket) : requestBase(socket){}
   int exec(Database& db);
 };
 
+class requestRemoveCompany : public requestBase {
+public:
+  requestRemoveCompany(sslFile *socket) : requestBase(socket){}
+  std::string company;
+  int exec(Database &db);
+};
+
+class requestRemoveDocument : public requestBase {
+public:
+  requestRemoveDocument(sslFile *socket) : requestBase(socket){}
+  int64_t idPage;
+  int exec(Database &db);
+};
 std::unique_ptr<requestBase> getRequest(sslFile *socket);
 #endif

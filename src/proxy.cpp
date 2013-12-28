@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "main.h"
 #include "proxy.h"
 
@@ -8,24 +9,25 @@ std::unique_ptr<requestBase> getRequest(sslFile *socket) {
   std::unique_ptr<requestBase> _req;
 	switch (socket->next()) {
 		case _req_code::SEARCH:
-			_req = std::unique_ptr<requestSearch>(new requestSearch());
-      _req->_socket = socket;
+			_req = std::unique_ptr<requestSearch>(new requestSearch(socket));
 			break;
     case _req_code::LIST_COMPANIES:
-      _req = std::unique_ptr<requestListCompanies>(new requestListCompanies());
-      _req->_socket = socket;
+      _req = std::unique_ptr<requestListCompanies>(new requestListCompanies(socket));
       break;
 		case _req_code::DOWNLOAD:
-			_req = std::unique_ptr<requestDownload>(new requestDownload());
-      _req->_socket = socket;
+			_req = std::unique_ptr<requestDownload>(new requestDownload(socket));
 			break;
 		case _req_code::UPLOAD:
-			_req = std::unique_ptr<requestUpload>(new requestUpload());
-      _req->_socket = socket;
+			_req = std::unique_ptr<requestUpload>(new requestUpload(socket));
 			break;
     case _req_code::NEW_COMPANY:
-      _req = std::unique_ptr<requestNewCompany>(new requestNewCompany());
-      _req->_socket = socket;
+      _req = std::unique_ptr<requestNewCompany>(new requestNewCompany(socket));
+      break;
+    case _req_code::REMOVE_COMPANY:
+      _req = std::unique_ptr<requestRemoveCompany>(new requestRemoveCompany(socket));
+      break;
+    case _req_code::REMOVE_DOCUMENT:
+      _req = std::unique_ptr<requestRemoveDocument>(new requestRemoveDocument(socket));
       break;
 	}
   return _req;
@@ -34,9 +36,14 @@ std::unique_ptr<requestBase> getRequest(sslFile *socket) {
 int requestSearch::exec(Database &db) {
   DEBUG_LOG("Execute search request");
 
-  if(load
-      //<std::vector<std::string>&, int, int>
-      (company, MAX_COMPANY, keywords, MAX_PARAMETERS, MAX_KEYWORD)) {
+  if(load(company, MAX_COMPANY, keywords, MAX_PARAMETERS, MAX_KEYWORD)) {
+    _socket->clear();
+
+    print(*_socket,
+      _response::CORRUPT_REQUEST,
+      err_msg);
+
+    print(error, err_msg);
     return -1;
   }
 
@@ -58,9 +65,16 @@ int requestSearch::exec(Database &db) {
 }
 
 int requestDownload::exec(Database &db) {
-  DEBUG_LOG("Excecute download requests");
+  DEBUG_LOG("Excecute download request");
 
   if(load(idPage, company, MAX_COMPANY)) {
+    _socket->clear();
+
+    print(*_socket,
+      _response::CORRUPT_REQUEST,
+      err_msg);
+
+    print(error, err_msg);
     return -1;
   }
   meta_doc result = db.getFile(idUser, idPage);
@@ -74,7 +88,16 @@ int requestDownload::exec(Database &db) {
 int requestUpload::exec(Database &db) {
   DEBUG_LOG("Execute upload request");
 
-  load(company, MAX_COMPANY, size);
+  if(load(company, MAX_COMPANY, size)) {
+    _socket->clear();
+
+    print(*_socket,
+      _response::CORRUPT_REQUEST,
+      err_msg);
+
+    print(error, err_msg);
+    return -1;
+  }
   int64_t idPage = db.newDocument(idUser, company);
 
   if(db.err_msg) {
@@ -128,16 +151,18 @@ int requestNewCompany::exec(Database &db) {
   DEBUG_LOG("Execute new Company request");
 
   if(load(name, MAX_COMPANY)) {
+    _socket->clear();
+
+    print(*_socket,
+      _response::CORRUPT_REQUEST,
+      err_msg);
+
+    print(error, err_msg);
     return -1;
   }
 
   _socket->clear();
   if(db.newCompany(name, idUser)) {
-    _socket->
-      append(_response::INTERNAL_ERROR)
-      .append(db.err_msg)
-      .out();
-
     print(*_socket,
       _response::INTERNAL_ERROR,
       db.err_msg);
@@ -177,5 +202,84 @@ int requestListCompanies::exec(Database &db) {
   _socket->
     append('\0').out();
 
+  return 0;
+}
+
+int requestRemoveCompany::exec(Database &db) {
+  DEBUG_LOG("Execute remove company");
+  if(load(company, MAX_COMPANY)) {
+    _socket->clear();
+
+    print(*_socket,
+      _response::CORRUPT_REQUEST,
+      err_msg);
+
+    print(error, err_msg);
+    return -1;
+  }
+
+  _socket->clear();
+  if(db.removeCompany(company, idUser)) {
+    print(*_socket,
+      _response::INTERNAL_ERROR,
+      db.err_msg);
+
+    print(error, db.err_msg);
+    return -1;
+  }
+
+  print(*_socket, _response::OK);
+  return 0;
+}
+
+int requestRemoveDocument::exec(Database &db) {
+  DEBUG_LOG("Execute remove document");
+
+  if(load(idPage)) {
+    _socket->clear();
+
+    print(*_socket,
+      _response::INTERNAL_ERROR,
+      db.err_msg);
+
+    print(error, db.err_msg);
+    return -1;
+  }
+
+  DEBUG_LOG("Removing idPage:", idPage);
+  _socket->clear();
+  if(db.removeDocument(idPage, idUser)) {
+    print(*_socket,
+      _response::INTERNAL_ERROR,
+      db.err_msg);
+
+    print(error, db.err_msg);
+    return -1;
+  }
+
+  /* root/idUser/ */
+  std::string path = config::storage.root;
+  if(path.back() != '/') {
+    path += '/';
+  }
+  path.append(std::to_string(idUser));
+  path += '_';
+
+  path.append(std::to_string(idPage));
+  path += ".txt";
+
+  ioFile out(1);
+  out.access(path);
+
+  if(std::remove(path.c_str())) {
+    strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+
+    print(*_socket, _response::INTERNAL_ERROR, err_buf);
+    print(error, err_buf);
+
+    return -1;
+  }
+
+  print(*_socket, _response::OK);
   return 0;
 }

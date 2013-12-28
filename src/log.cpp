@@ -1,9 +1,9 @@
 #include "log.h"
 
-LogFile error  (1024, " Error: "  , -1);
-LogFile warning(1024, " Warning: ", -1);
-LogFile info   (1024, " Info: "   , -1);
-LogFile debug  (1024, " Debug: "  , -1);
+LogFile error  (1024, " Error: "  , 1);
+LogFile warning(1024, " Warning: ", 1);
+LogFile info   (1024, " Info: "   , 1);
+LogFile debug  (1024, " Debug: "  , 1);
 
 std::mutex _LogStreamBase::_lock;
 char _LogStreamBase::_date[DATE_BUFFER_SIZE];

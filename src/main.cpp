@@ -20,7 +20,9 @@ void start_server() {
     Database db;
 
     if(db.err_msg) {
-      print(*client.socket, "Could not connect to database.");
+      print(*client.socket, 
+        _response::INTERNAL_ERROR,
+        "Could not connect to database.");
       print(error, db.err_msg);
 
       return;
@@ -40,12 +42,13 @@ void start_server() {
 
     std::unique_ptr<requestBase> req = getRequest(client.socket.get());
 
-    req->idUser = idUser;
     if(req.get() == nullptr) {
       print(warning, "Unknown request.");
       return;
     }
 //    req->insert(client.socket.get());
+
+    req->idUser = idUser;
     req->exec(db);
   }
   ) < 0) {
