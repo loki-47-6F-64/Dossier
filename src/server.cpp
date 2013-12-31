@@ -21,7 +21,7 @@ int Server::addListener(uint16_t port, int max_parallel, std::function<void(Clie
 	sockaddr_in server {
 		config::server.inet,
 		htons(port),
-		{ config::server.allowed_inaddr }
+		{ INADDR_ANY }
 	};
 
 	pollfd pfd { 
@@ -105,11 +105,9 @@ void Server::_listen() {
 			
     }
     else if(result == -1) {
-      strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
-      print(error, "Cannot poll socket: ", err_buf);
+      print(error, "Cannot poll socket: ", strerror_r(errno, err_buf, MAX_ERROR_BUFFER));
 
       exit(EXIT_FAILURE);
-      //FATAL_ERROR("Cannot poll socket", errno);
     }
   }
 

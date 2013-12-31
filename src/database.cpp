@@ -7,15 +7,15 @@
 #include "database.h"
 Database::Database() {
 	if(!_sql.open(
-		config::database.host,
-		config::database.user,
-		config::database.password))
+		config::database.host.c_str(),
+		config::database.user.c_str(),
+		config::database.password.c_str()))
 	{
 		err_msg = "Failed to connect to database";
 		return;
 	}
 
-	_sql.setdb(config::database.db);
+	_sql.setdb(config::database.db.c_str());
 }
 
 

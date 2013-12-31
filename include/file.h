@@ -90,7 +90,8 @@ public:
     	load(cacheSize);
     }
 
-  	return *_data_p++;
+    // If _cache.empty() return '\0'
+  	return _cache.empty() ? '\0' : *_data_p++;
 	}
 
   int eachLoaded(std::function<bool(unsigned char)> f) {

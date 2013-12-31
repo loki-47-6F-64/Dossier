@@ -1,7 +1,6 @@
-#include <fcntl.h>
-#include <unistd.h>
-
 #include <thread>
+#include <unordered_map>
+
 #include "main.h"
 
 #include "file.h"
@@ -12,7 +11,6 @@
 typedef unsigned char byte;
 
 thread_local char err_buf[MAX_ERROR_BUFFER];
-#define ROOT_SERVER "/home/loki/keys/server/"
 void start_server() {
 	Server s;
 
@@ -52,8 +50,9 @@ void start_server() {
     req->exec(db);
   }
   ) < 0) {
-    strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
-		print(error, "Can't set listener: ", err_buf);
+		print(error, "Can't set listener: ", strerror_r(errno, err_buf, MAX_ERROR_BUFFER));
+
+    return;
 	}
 
   if(s.addListener(8081, 20, [&](Client &&client) {
@@ -70,32 +69,21 @@ void start_server() {
   ) < 0) {
     strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
     print(error, "Can't set listener: ", err_buf);
+
+    return;
   }
 
 	s();
 }
 
-namespace config {
-  // Initialize with default values
-	_database database {
-		"127.0.0.1",
-		"root",
-		"root",
-		"mydb"
-	};
-
-  _storage storage {
-    "."
-  };
-
-  _server server {
-    std::string(ROOT_SERVER "root.crt"),
-    std::string(ROOT_SERVER "ssl_server.key"),
-    8080, AF_INET, INADDR_ANY, 200
-  };
-};
-
 int main() {
+  ioFile io_out(1, dup(STDOUT_FILENO));
+
+  if(config::file("./dossier.conf")) {
+    io_out.append(config::err_msg).append("\n").out();
+    return -1;
+  }
+
   log_open("out.log");
   if(Server::init(config::server.certPath, config::server.keyPath)) {
     int err;
@@ -109,5 +97,6 @@ int main() {
   }
 
   start_server();
+
   return 0;
 }
