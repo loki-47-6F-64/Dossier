@@ -51,8 +51,6 @@ void _SslStream::seal() {
   ::close(_fd);  
 }
 
-void _SslStream::flush() {}
-
 int _SslStream::fd() { return SSL_get_fd(_ssl); }
 bool _SslStream::is_open() { return _ssl != nullptr; }
 bool _SslStream::eof() { return _eof; }

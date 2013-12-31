@@ -25,7 +25,6 @@ public:
 	int access(std::string &path);
 	void seal();
 
-	void flush();
   int fd();
 };
 
@@ -48,7 +47,6 @@ public:
   int access(std::string &path);
   void seal();
 
-  void flush();
   int fd();
 };
 

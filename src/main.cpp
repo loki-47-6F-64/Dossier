@@ -55,24 +55,6 @@ void start_server() {
     return;
 	}
 
-  if(s.addListener(8081, 20, [&](Client &&client) {
-    DEBUG_LOG("Started Copy...");
-
-    ioFile echo { 2, STDOUT_FILENO };
-
-    echo.close_after_delete = false;
-
-    client.socket->copy(echo);
-
-    DEBUG_LOG("Finished copy");
-  }
-  ) < 0) {
-    strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
-    print(error, "Can't set listener: ", err_buf);
-
-    return;
-  }
-
 	s();
 }
 

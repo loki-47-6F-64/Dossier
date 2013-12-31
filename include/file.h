@@ -18,9 +18,6 @@ public:
   // Change of cacheSize only affects next load
   int cacheSize;
 
-  // Wether or not to close the file after deletion of _File
-  bool close_after_delete = true;
-
   _File(_File&& other) {
     _stream = std::move(other._stream);
     _cache  = std::move(other._cache);
@@ -40,7 +37,7 @@ public:
 	}
 
 	~_File() {
-		if(close_after_delete && is_open())
+		if(is_open())
 			seal();
 	}
 
@@ -160,7 +157,6 @@ public:
     return _stream.access(path);
   }
 
-	inline void flush() { _stream.flush(); }
 	inline std::vector<unsigned char> &getCache() { return _cache; }
 	inline bool eof() { return _stream.eof(); }
 	inline bool end_of_buffer() {return _data_p == _cache.cend();}

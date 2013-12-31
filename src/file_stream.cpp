@@ -50,10 +50,6 @@ void _FileStream::seal() {
 	_fd = -1;
 }
 
-void _FileStream::flush() {
-	fsync(_fd);
-}
-
 int _FileStream::fd() { return _fd;};
 bool _FileStream::is_open() { return _fd != -1; }
 bool _FileStream::eof() { return _eof; }
