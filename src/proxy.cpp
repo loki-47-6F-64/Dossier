@@ -38,9 +38,7 @@ int requestSearch::exec(Database &db) {
 
   if(load(
       company, MAX_COMPANY,
-      year,  4,
-      month, 2,
-      day,   2,
+      year, month, day,
       keywords, MAX_PARAMETERS, MAX_KEYWORD))
   {
     _socket->clear();

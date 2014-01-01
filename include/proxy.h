@@ -89,7 +89,20 @@ public:
       return -1;
     }
 
-    buf = std::stol(str);
+    buf = std::atol(str.c_str());
+    return load(std::forward<Args>(params)...);
+  }
+
+  template<class... Args>
+  int load(int& buf, Args&&... params) {
+    int max_digits = 10;
+
+    std::string str;
+    if(load(str, max_digits)) {
+      return -1;
+    }
+
+    buf = std::atoi(str.c_str());
     return load(std::forward<Args>(params)...);
   }
 
@@ -143,7 +156,7 @@ class requestSearch : public requestBase {
 public:
   requestSearch(sslFile *socket) : requestBase(socket){}
 	std::string company;
-  std::string year, month, day;
+  int year, month, day;
 
 	std::vector<std::string> keywords;
 

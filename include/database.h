@@ -23,7 +23,7 @@ public:
 //	~Database();
 
 	std::vector<meta_doc> search(int64_t idUser, std::string &company,
-    std::string &year, std::string &month, std::string &day);
+    int year, int month, int day);
 
 	meta_doc getFile(int64_t idUser, int64_t idPage);
 
@@ -35,13 +35,15 @@ public:
 	int64_t validateUser(std::string& username);
 
 	int newUser(std::string &username,
-									std::string &email,
-								  std::string &hash);
+									std::string &email);
 
   int newCompany(std::string &name, int64_t idUser);
   int removeCompany(std::string &name, int64_t idUser);
 
   std::vector<std::string> listCompany(int64_t idUser);
+
+private:
+  static void sanitize(std::string &input);
 };
 
 #endif

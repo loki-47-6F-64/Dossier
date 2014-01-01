@@ -11,7 +11,7 @@ Database::Database() {
 		config::database.user.c_str(),
 		config::database.password.c_str()))
 	{
-		err_msg = "Failed to connect to database";
+		err_msg = _sql.error();
 		return;
 	}
 
@@ -20,15 +20,14 @@ Database::Database() {
 
 
 int Database::newUser(std::string &username,
-                  		std::string &email,
-                  		std::string &hash)
+                  		std::string &email)
 {
+  sanitize(username); sanitize(email);
 	std::ostringstream query;
 
 	query << "INSERT INTO user (username, email, password) VALUES ('";
 	query << username.data(); query << "','";
-	query << email.data(); query << "','";
-	query << hash.data(); query << "')";
+	query << email.data(); query << "',')";
 
 	if(_sql.query(query.str())) {
 		err_msg = _sql.error();
@@ -51,6 +50,8 @@ int Database::removeDocument(int64_t idPage, int64_t idUser) {
 }
 
 int64_t Database::validateUser(std::string& username) {
+  sanitize(username);
+
 	std::ostringstream query;
 
 	query << "SELECT 1 FROM user WHERE username='" << 
@@ -78,23 +79,25 @@ int64_t Database::validateUser(std::string& username) {
 }
 
 std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
-  std::string &year, std::string &month, std::string &day)
+  int year, int month, int day)
 {
+  sanitize(company);
+
   std::ostringstream query;
   query << "SELECT doc.idPage, Company.name, doc.created FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" << idUser << '\'';
   if(!company.empty()) {
     query << " AND Company.name='" << company << '\'';
   }
 
-  if(!day.empty()) {
+  if(!day) {
     query << " AND DAY(doc.created)='" << day << '\'';
   }
 
-  if(!month.empty()) {
+  if(!month) {
     query << " AND MONTH(doc.created)='" << month << '\'';
   }
 
-  if(!year.empty()) {
+  if(!year) {
     query << " AND YEAR(doc.created)='" << year << '\'';
   }
 
@@ -144,6 +147,8 @@ meta_doc Database::getFile(int64_t idUser, int64_t idPage) {
 }
 
 int64_t Database::newDocument(int64_t idUser, std::string &company) {
+  sanitize(company);
+
   std::ostringstream query;
   query << "INSERT INTO Document (user_idUser, Company_idCompany) VALUES (" << idUser << ", (SELECT idCompany FROM Company WHERE Company.user_idUser=" << idUser << " AND Company.name='" << company << "' LIMIT 1))";
 
@@ -155,6 +160,8 @@ int64_t Database::newDocument(int64_t idUser, std::string &company) {
 }
 
 int Database::newCompany(std::string &name, int64_t idUser) {
+  sanitize(name);
+
   std::ostringstream query;
 
   query << "INSERT INTO Company (user_idUser, name) VALUES ("
@@ -169,6 +176,8 @@ int Database::newCompany(std::string &name, int64_t idUser) {
 }
 
 int Database::removeCompany(std::string &name, int64_t idUser) {
+  sanitize(name);
+
   std::ostringstream query;
 
   query << "DELETE FROM Company WHERE name='" << name << "'"
@@ -199,3 +208,8 @@ std::vector<std::string> Database::listCompany(int64_t idUser) {
 
   return result;
 }
+
+void Database::sanitize(std::string& input) {
+  // Todo: sanitize logic
+}
+
