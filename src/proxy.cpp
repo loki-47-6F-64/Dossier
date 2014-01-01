@@ -132,9 +132,9 @@ int requestUpload::exec(Database &db) {
   DEBUG_LOG("Copying file: ", path, " of size: ", size);
 
   // Attempt to copy file from client
-  if(_socket->copy(out, size)) {
-    _socket->clear();
+  int err = _socket->copy(out, size);
 
+  if(err == FileErr::SYS_ERROR) {
     strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
     print(error, "Uploading failed: ", err_buf);
 
@@ -144,9 +144,16 @@ int requestUpload::exec(Database &db) {
 
     return -1;
   }
+  if(err == FileErr::TIMEOUT) {
+    print(error, "Uploading failed: Timeout");
+    print(*_socket,
+      _response::INTERNAL_ERROR,
+      "Uploading failed: Timeout");
 
-  _socket->
-    clear().append(_response::OK).out();
+    return -1;
+  }
+
+  print(*_socket, _response::OK);
 
   return 0;
 }
@@ -155,8 +162,6 @@ int requestNewCompany::exec(Database &db) {
   DEBUG_LOG("Execute new Company request");
 
   if(load(name, MAX_COMPANY)) {
-    _socket->clear();
-
     print(*_socket,
       _response::CORRUPT_REQUEST,
       err_msg);
@@ -165,7 +170,6 @@ int requestNewCompany::exec(Database &db) {
     return -1;
   }
 
-  _socket->clear();
   if(db.newCompany(name, idUser)) {
     print(*_socket,
       _response::INTERNAL_ERROR,
@@ -175,8 +179,7 @@ int requestNewCompany::exec(Database &db) {
     return -1;
   }
 
-  _socket->
-    append(_response::OK).out();
+  print(*_socket, _response::OK);
 
   return 0;
 }
@@ -184,7 +187,6 @@ int requestNewCompany::exec(Database &db) {
 int requestListCompanies::exec(Database &db) {
   DEBUG_LOG("Execute list Company request");
 
-  _socket->clear();
   std::vector<std::string> companies = db.listCompany(idUser);
 
   if(db.err_msg) {
@@ -196,7 +198,7 @@ int requestListCompanies::exec(Database &db) {
     return -1;
   }
 
-  _socket->append(_response::OK);
+  _socket->clear().append(_response::OK);
 
   for(auto& company : companies) {
     _socket->
@@ -212,8 +214,6 @@ int requestListCompanies::exec(Database &db) {
 int requestRemoveCompany::exec(Database &db) {
   DEBUG_LOG("Execute remove company");
   if(load(company, MAX_COMPANY)) {
-    _socket->clear();
-
     print(*_socket,
       _response::CORRUPT_REQUEST,
       err_msg);
@@ -222,7 +222,6 @@ int requestRemoveCompany::exec(Database &db) {
     return -1;
   }
 
-  _socket->clear();
   if(db.removeCompany(company, idUser)) {
     print(*_socket,
       _response::INTERNAL_ERROR,
@@ -240,8 +239,6 @@ int requestRemoveDocument::exec(Database &db) {
   DEBUG_LOG("Execute remove document");
 
   if(load(idPage)) {
-    _socket->clear();
-
     print(*_socket,
       _response::INTERNAL_ERROR,
       db.err_msg);
@@ -251,7 +248,6 @@ int requestRemoveDocument::exec(Database &db) {
   }
 
   DEBUG_LOG("Removing idPage:", idPage);
-  _socket->clear();
   if(db.removeDocument(idPage, idUser)) {
     print(*_socket,
       _response::INTERNAL_ERROR,

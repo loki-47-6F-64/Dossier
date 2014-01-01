@@ -5,20 +5,30 @@
 #include <functional>
 
 #include "stream.h"
+
+namespace FileErr {
+  enum {
+    SYS_ERROR = -1,
+    OK,
+    TIMEOUT
+  };
+};
+
 /* Represents file in memory, storage or socket */
 template <class Stream, class... Args>
-class _File {
+class FD /* File descriptor */ {
 	Stream _stream;
 
 	std::vector<unsigned char> _cache;
   std::vector<unsigned char>::const_iterator _data_p;
 
   long _microsec;
+
 public:
   // Change of cacheSize only affects next load
   int cacheSize;
 
-  _File(_File&& other) {
+  FD(FD&& other) {
     _stream = std::move(other._stream);
     _cache  = std::move(other._cache);
 
@@ -27,16 +37,16 @@ public:
     cacheSize = other.cacheSize;
   }
 
-	_File(int cacheSize, long microsec = -1) 
+	FD(int cacheSize, long microsec = -1) 
       : cacheSize(cacheSize), _microsec(microsec) {}
 
-	_File(int cacheSize, Args... params) 
-      : cacheSize(cacheSize), _microsec(-1)
+	FD(int cacheSize, long microsec, Args... params) 
+      : cacheSize(cacheSize), _microsec(microsec)
   {
 		_stream.open(std::forward<Args>(params)...);
 	}
 
-	~_File() {
+	~FD() {
 		if(is_open())
 			seal();
 	}
@@ -80,7 +90,7 @@ public:
     return -1;
 	}
 
-	// Buffer pointers
+  // Usefull when fine controll is nessesary
 	unsigned char next() {
 		// Load new _cache if end of buffer is reached
   	if(end_of_buffer()) {
@@ -91,56 +101,57 @@ public:
   	return _cache.empty() ? '\0' : *_data_p++;
 	}
 
-  int eachLoaded(std::function<bool(unsigned char)> f) {
-    if(end_of_buffer()) {
-      if(load(cacheSize)) {
-        return -1;
+  int eachByte(std::function<bool(unsigned char)> f) {
+    while(!eof()) {
+      if(end_of_buffer()) {
+        if(load(cacheSize)) {
+          return -1;
+        }
       }
-    }
 
-    while(!end_of_buffer()) {
       if(!f(*_data_p++))
         break;
     }
 
     return 0;
   }
+
 	// Append buffer
-	inline _File& append(std::vector<unsigned char>& buffer) {
+	inline FD& append(std::vector<unsigned char>& buffer) {
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
 
     return *this;
 	}
 
-	inline _File& append(std::string &buffer) {
+	inline FD& append(std::string &buffer) {
 		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
 
     return *this;
 	}
 
-  inline _File& append(unsigned char ch) {
+  inline FD& append(unsigned char ch) {
     _cache.push_back(ch);
 
     return *this;
   }
 
-  inline _File& append(char ch) {
+  inline FD& append(char ch) {
     return append(static_cast<unsigned char>(ch));
   }
 
-  inline _File& append(long integer) {
+  inline FD& append(long integer) {
     return append(std::to_string(integer));
   }
 
-  inline _File& append(int integer) {
+  inline FD& append(int integer) {
     return append(std::to_string(integer));
   }
 
-  inline _File& append(std::string &&buffer) {
+  inline FD& append(std::string &&buffer) {
     return append(buffer);
   }
 
-  inline _File& clear() {
+  inline FD& clear() {
     _cache.clear();
 
     return *this;
@@ -164,26 +175,34 @@ public:
 	inline void seal() { _stream.seal(); }
 
 
-  /* Copies max bytes from this to out
-     If max == -1 copy the whole file */
+  /* 
+     Copies max bytes from this to out
+     If max == -1 copy the whole file
+     On failure: return (Error)-1 or (Timeout)1
+     On success: return  0
+     On attempt to copy more bytes than max: return 2
+  */
   template<class Out>
   int copy(Out &out, int64_t max = -1) {
     std::vector<unsigned char> &cache = out.getCache();
 
     while(!eof() && max) {
-      int error;
-      error = eachLoaded([&](unsigned char data_p) {
-        cache.push_back(data_p);
-        return --max;
-      });
-
-      if(error) {
-        return -1;
+      if(end_of_buffer()) {
+        int err;
+        if((err = load(cacheSize))) {
+          return err;
+        }
       }
 
+      while(!end_of_buffer()) {
+        cache.push_back(*_data_p++);
+
+        if(!max--) {
+          return 2;
+        }
+      }
       out.out();
     }
-
     return 0;
   }
 };
@@ -209,6 +228,6 @@ void print(File& file, Args&&... params) {
   _print(file, std::forward<Args>(params)...);
 }
 
-typedef _File<FileStream> ioFile;
-typedef _File<SslStream> sslFile;
+typedef FD<FileStream> ioFile;
+typedef FD<SslStream> sslFile;
 #endif

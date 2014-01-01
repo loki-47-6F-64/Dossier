@@ -79,11 +79,12 @@ Context init_ssl(std::string& certPath, std::string& keyPath) {
 }
 
 Client ssl_accept(SSL_CTX *ctx, int fd, sockaddr *client_addr, uint32_t* addr_size) {
+  constexpr long buffer_size = 1024, timeout = 300000;
   Client client;
   int clientFd = accept(fd, client_addr, addr_size);
 
   SSL *ssl = SSL_new(ctx);
-  std::unique_ptr<sslFile> socket(new sslFile(1, ssl));
+  std::unique_ptr<sslFile> socket(new sslFile(buffer_size, timeout, ssl));
   SSL_set_fd(ssl, clientFd);
 
   if(SSL_accept(ssl) != 1) {

@@ -19,22 +19,25 @@ constexpr int MAX_PARAMETERS = 10;
 
 class Database;
 
-enum _req_code {
-  SEARCH,
-  LIST_COMPANIES,
-  DOWNLOAD,
-  UPLOAD,
-  NEW_COMPANY,
-  REMOVE_COMPANY,
-  REMOVE_DOCUMENT
+namespace _req_code {
+  enum {
+    SEARCH,
+    LIST_COMPANIES,
+    DOWNLOAD,
+    UPLOAD,
+    NEW_COMPANY,
+    REMOVE_COMPANY,
+    REMOVE_DOCUMENT
+  };
 };
 
-enum _response {
-  OK,
-  INTERNAL_ERROR,
-  CORRUPT_REQUEST
+namespace _response {
+  enum {
+    OK,
+    INTERNAL_ERROR,
+    CORRUPT_REQUEST
+  };
 };
-
 class requestBase {
 protected:
 	sslFile *_socket;
@@ -52,31 +55,21 @@ public:
   int load() { return 0; }
   template<class... Args>
   int load(std::string &buf, int max, Args&&... params) {
-    bool cont = true;
-    int result = 0;
+    int result = _socket->eachByte([&](unsigned char ch) {
+      if(buf.size() > max) {
+        result = -1;
+        err_msg = "String to large";
 
-    while(cont) {
-      if(_socket->eof()) {
-        err_msg = "Reached EOF before \\0";
-        return -1;
+        return false;
       }
 
-      _socket->eachLoaded([&](unsigned char ch) {
-        if(buf.size() > max) {
-          result = -1;
-          err_msg = "String to large";
+      if(!ch) {
+        return false;
+      }
 
-          return false;
-        }
-
-        if(!ch) {
-          return cont = false;
-        }
-
-        buf.push_back(ch);
-        return true;
-      });
-    }
+      buf.push_back(ch);
+      return true;
+    });
 
     if(result) {
       return -1;

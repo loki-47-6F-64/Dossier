@@ -77,7 +77,7 @@ public:
 };
 
 #define LogStream _LogStream<FileStream>, std::string &&, int
-typedef _File<LogStream> LogFile;
+typedef FD<LogStream> LogFile;
 
 extern void log_open(const char *logPath);
 

@@ -89,15 +89,15 @@ std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
     query << " AND Company.name='" << company << '\'';
   }
 
-  if(!day) {
+  if(day) {
     query << " AND DAY(doc.created)='" << day << '\'';
   }
 
-  if(!month) {
+  if(month) {
     query << " AND MONTH(doc.created)='" << month << '\'';
   }
 
-  if(!year) {
+  if(year) {
     query << " AND YEAR(doc.created)='" << year << '\'';
   }
 
