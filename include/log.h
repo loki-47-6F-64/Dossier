@@ -71,10 +71,6 @@ public:
     _stream.seal();
   }
 
-  void flush() {
-    _stream.flush();
-  }
-
   int fd() {
     return _stream.fd();
   }

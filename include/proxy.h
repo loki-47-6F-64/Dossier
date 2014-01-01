@@ -45,6 +45,10 @@ public:
 
 	const char *err_msg = nullptr;
 
+  /*
+   * All values in the request are send in a null-terminated byte string
+   * On failure a non-zero value is returned and err_msg is set.
+   */
   int load() { return 0; }
   template<class... Args>
   int load(std::string &buf, int max, Args&&... params) {
@@ -128,7 +132,6 @@ public:
 	virtual int exec(Database& db) = 0;
 };
 
-// Client upload
 class requestUpload : public requestBase {
 public:
   requestUpload(sslFile *socket) : requestBase(socket){}
@@ -140,7 +143,6 @@ public:
 	int exec(Database& db);
 };
 
-// Client download
 class requestDownload : public requestBase {
 public:
   requestDownload(sslFile *socket) : requestBase(socket){}

@@ -189,15 +189,26 @@ public:
 };
 
 template<class File>
-void print(File& file) {
+void _print(File& file) {
   file.out();
 }
 
 template<class File, class Out, class... Args>
-void print(File& file, Out out, Args... params) {
+void _print(File& file, Out&& out, Args&&... params) {
   file.append(out);
-  print(file, std::forward<Args>(params)...);
+  _print(file, std::forward<Args>(params)...);
 }
+
+/*
+ * First clear file, then recursively print all params
+ */
+template<class File, class... Args>
+void print(File& file, Args&&... params) {
+  file.clear();
+
+  _print(file, std::forward<Args>(params)...);
+}
+
 typedef _File<FileStream> ioFile;
 typedef _File<SslStream> sslFile;
 #endif
