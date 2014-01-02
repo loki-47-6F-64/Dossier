@@ -40,8 +40,13 @@ int requestSearch::exec(Database &db) {
       year, month, day,
       keywords, MAX_PARAMETERS, MAX_KEYWORD))
   {
-    _socket->clear();
-
+    if(req_errno == FileErr::TIMEOUT) {
+      print(error, "Timeout occurred");
+      return -1;
+    } 
+    if(req_errno == FileErr::STREAM_ERR) {
+      err_msg = ssl_err();
+    }
     print(*_socket,
       _response::CORRUPT_REQUEST,
       err_msg);
@@ -84,7 +89,15 @@ std::string getDocPath(int64_t idUser, int64_t idPage) {
 int requestDownload::exec(Database &db) {
   DEBUG_LOG("Excecute download request");
 
-  if(load(idPage, company, MAX_COMPANY)) {
+  if(load(idPage)) {
+    if(req_errno == FileErr::TIMEOUT) {
+      print(error, "Timeout occurred");
+      return -1;
+    } 
+    if(req_errno == FileErr::STREAM_ERR) {
+      err_msg = ssl_err();
+    }
+
     print(*_socket,
       _response::CORRUPT_REQUEST,
       err_msg);
@@ -98,6 +111,7 @@ int requestDownload::exec(Database &db) {
   ioFile page(1024);
   page.access(path);
 
+  print(*_socket, _response::OK);
   int err = page.copy(*_socket);
 
   if(err == FileErr::STREAM_ERR) {
@@ -136,7 +150,13 @@ int requestUpload::exec(Database &db) {
   DEBUG_LOG("Execute upload request");
 
   if(load(company, MAX_COMPANY, size)) {
-    _socket->clear();
+    if(req_errno == FileErr::TIMEOUT) {
+      print(error, "Timeout occurred");
+      return -1;
+    }
+    if(req_errno == FileErr::STREAM_ERR) {
+      err_msg = ssl_err();
+    }
 
     print(*_socket,
       _response::CORRUPT_REQUEST,
@@ -206,6 +226,14 @@ int requestNewCompany::exec(Database &db) {
   DEBUG_LOG("Execute new Company request");
 
   if(load(name, MAX_COMPANY)) {
+    if(req_errno == FileErr::TIMEOUT) {
+      print(error, "Timeout occurred");
+      return -1;
+    }
+    if(req_errno == FileErr::STREAM_ERR) {
+      err_msg = ssl_err();
+    }
+
     print(*_socket,
       _response::CORRUPT_REQUEST,
       err_msg);
@@ -258,6 +286,14 @@ int requestListCompanies::exec(Database &db) {
 int requestRemoveCompany::exec(Database &db) {
   DEBUG_LOG("Execute remove company");
   if(load(company, MAX_COMPANY)) {
+    if(req_errno == FileErr::TIMEOUT) {
+      print(error, "Timeout occurred");
+      return -1;
+    }
+    if(req_errno == FileErr::STREAM_ERR) {
+      err_msg = ssl_err();
+    }
+
     print(*_socket,
       _response::CORRUPT_REQUEST,
       err_msg);
@@ -283,6 +319,14 @@ int requestRemoveDocument::exec(Database &db) {
   DEBUG_LOG("Execute remove document");
 
   if(load(idPage)) {
+    if(req_errno == FileErr::TIMEOUT) {
+      print(error, "Timeout occurred");
+      return -1;
+    }
+    if(req_errno == FileErr::STREAM_ERR) {
+      err_msg = ssl_err();
+    }
+
     print(*_socket,
       _response::INTERNAL_ERROR,
       db.err_msg);

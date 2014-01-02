@@ -46,8 +46,8 @@ public:
 
   int64_t idUser;
 
-	const char *err_msg = nullptr;
-
+  const char *err_msg;
+  int req_errno;
   /*
    * All values in the request are send in a null-terminated byte string
    * On failure a non-zero value is returned and err_msg is set.
@@ -55,23 +55,25 @@ public:
   int load() { return 0; }
   template<class... Args>
   int load(std::string &buf, int max, Args&&... params) {
-    int result = _socket->eachByte([&](unsigned char ch) {
+    int err = _socket->eachByte([&](unsigned char ch) {
       if(buf.size() > max) {
-        result = -1;
-        err_msg = "String to large";
-
-        return false;
+        return static_cast<int>(FileErr::CUSTOM_ERR);
       }
 
       if(!ch) {
-        return false;
+        return static_cast<int>(FileErr::BREAK);
       }
 
       buf.push_back(ch);
-      return true;
+      return 0;
     });
 
-    if(result) {
+    if(err) {
+      if(err >= FileErr::CUSTOM_ERR) {
+        err_msg = "String size to great.";
+      }
+
+      req_errno = err;
       return -1;
     }
     return load(std::forward<Args>(params)...);
@@ -141,8 +143,6 @@ public:
   requestDownload(sslFile *socket) : requestBase(socket){}
 
   int64_t idPage;
-
-	std::string company;
 
 	int exec(Database& db);
 };

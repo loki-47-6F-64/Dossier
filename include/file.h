@@ -12,6 +12,8 @@ namespace FileErr {
     OK,
     TIMEOUT,
     COPY_STREAM_ERR,
+    BREAK, // Break from eachByte()
+    CUSTOM_ERR, // Error propagated from eachByte()
   };
 };
 
@@ -105,13 +107,15 @@ public:
   int eachByte(std::function<bool(unsigned char)> f) {
     while(!eof()) {
       if(end_of_buffer()) {
-        if(load(cacheSize)) {
-          return FileErr::STREAM_ERR;
+        int err;
+        if((err = load(cacheSize))) {
+          return err;
         }
       }
 
-      if(!f(*_data_p++))
-        break;
+      int custom_err;
+      if((custom_err = f(*_data_p++)))
+        return custom_err > FileErr::BREAK ? custom_err : FileErr::OK;
     }
 
     return FileErr::OK;
