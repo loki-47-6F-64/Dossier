@@ -1,8 +1,6 @@
 #include <string>
 #include <sstream>
 
-#include "proxy.h"
-
 #include "main.h"
 #include "database.h"
 Database::Database() {

@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "proxy.h"
 #include "sql_connect.h"
 
 struct meta_doc {

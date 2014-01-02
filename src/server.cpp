@@ -2,11 +2,7 @@
 #include "server.h"
 
 #include <unistd.h>
-
 #include <thread>
-#include <future>
-
-#include <algorithm>
 
 Context Server::_ssl_ctx;
 void Server::operator() () {

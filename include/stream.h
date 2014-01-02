@@ -5,7 +5,6 @@
 #include <string>
 
 #include <openssl/ssl.h>
-#include <openssl/err.h>
 class _FileStream {
 	bool _eof;
 	int _fd;

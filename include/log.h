@@ -1,7 +1,6 @@
 #ifndef DOSSIER_LOG_H
 #define DOSSIER_LOG_H
 
-#include <utility>
 #include <ctime>
 #include <vector>
 #include <string>
