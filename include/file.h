@@ -8,9 +8,10 @@
 
 namespace FileErr {
   enum {
-    SYS_ERROR = -1,
+    STREAM_ERR = -1,
     OK,
-    TIMEOUT
+    TIMEOUT,
+    COPY_STREAM_ERR,
   };
 };
 
@@ -75,19 +76,19 @@ public:
     }
 
   	if((_stream >> _cache) < 0)
-    	return -1;
+    	return FileErr::STREAM_ERR;
 
   	_data_p = _cache.cbegin();
-  	return 0;
+  	return FileErr::OK;
 	}
 
 	// Write to file
 	inline int out() {
 		if((_stream << _cache) >= 0) {
       clear();
-      return 0;
+      return FileErr::OK;
     }
-    return -1;
+    return FileErr::STREAM_ERR;
 	}
 
   // Usefull when fine controll is nessesary
@@ -105,7 +106,7 @@ public:
     while(!eof()) {
       if(end_of_buffer()) {
         if(load(cacheSize)) {
-          return -1;
+          return FileErr::STREAM_ERR;
         }
       }
 
@@ -113,7 +114,7 @@ public:
         break;
     }
 
-    return 0;
+    return FileErr::OK;
   }
 
 	// Append buffer
@@ -180,7 +181,6 @@ public:
      If max == -1 copy the whole file
      On failure: return (Error)-1 or (Timeout)1
      On success: return  0
-     On attempt to copy more bytes than max: return 2
   */
   template<class Out>
   int copy(Out &out, int64_t max = -1) {
@@ -190,20 +190,23 @@ public:
       if(end_of_buffer()) {
         int err;
         if((err = load(cacheSize))) {
-          return err;
+          return err; // STREAM_ERR or TIMEOUT
         }
       }
 
       while(!end_of_buffer()) {
         cache.push_back(*_data_p++);
 
-        if(!max--) {
-          return 2;
-        }
+        if(!max)
+          break;
+
+        --max;
       }
-      out.out();
+      if(out.out()) {
+        return FileErr::COPY_STREAM_ERR;
+      }
     }
-    return 0;
+    return FileErr::OK;
   }
 };
 

@@ -68,12 +68,24 @@ int requestSearch::exec(Database &db) {
   return 0;
 }
 
+std::string getDocPath(int64_t idUser, int64_t idPage) {
+  std::string path = config::storage.root;
+  if(path.back() != '/') {
+    path += '/';
+  }
+  path.append(std::to_string(idUser));
+  path += '_';
+
+  path.append(std::to_string(idPage));
+  path += ".txt";
+
+  return path;
+}
+
 int requestDownload::exec(Database &db) {
   DEBUG_LOG("Excecute download request");
 
   if(load(idPage, company, MAX_COMPANY)) {
-    _socket->clear();
-
     print(*_socket,
       _response::CORRUPT_REQUEST,
       err_msg);
@@ -81,10 +93,42 @@ int requestDownload::exec(Database &db) {
     print(error, err_msg);
     return -1;
   }
-  meta_doc result = db.getFile(idUser, idPage);
-  
-  DEBUG_LOG(result.company.c_str());
-  DEBUG_LOG(result.id);
+
+  std::string path = getDocPath(idUser, idPage);
+
+  ioFile page(1024);
+  page.access(path);
+
+  int err = page.copy(*_socket);
+
+  if(err == FileErr::STREAM_ERR) {
+    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    print(error, "Downloading failed: ", err);
+
+    print(*_socket,
+      _response::INTERNAL_ERROR,
+      "Downloading failed: ", err);
+
+    return -1;
+  }
+  if(err == FileErr::TIMEOUT) {
+    print(error, "Downloading failed: Timeout");
+    print(*_socket,
+      _response::INTERNAL_ERROR,
+      "Downloading failed: Timeout");
+
+    return -1;
+  }
+  if(err == FileErr::COPY_STREAM_ERR) {
+    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    print(error, "Downloading failed: ", err);
+
+    print(*_socket,
+      _response::INTERNAL_ERROR,
+      "Downloading failed: ", err);
+
+    return -1;
+  }
 
   return 0;
 }
@@ -114,19 +158,9 @@ int requestUpload::exec(Database &db) {
       _response::INTERNAL_ERROR,
       db.err_msg);
   }
-   
-  /* root/idUser/ */
-  std::string path = config::storage.root;
-  if(path.back() != '/') {
-    path += '/';
-  }
-  path.append(std::to_string(idUser));
-  path += '_';
 
-  path.append(std::to_string(idPage));
-  path += ".txt";
-
-  ioFile out(1);
+  std::string path = getDocPath(idUser, idPage);
+  ioFile out(1024);
   out.access(path);
 
   DEBUG_LOG("Copying file: ", path, " of size: ", size);
@@ -134,21 +168,32 @@ int requestUpload::exec(Database &db) {
   // Attempt to copy file from client
   int err = _socket->copy(out, size);
 
-  if(err == FileErr::SYS_ERROR) {
-    strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
-    print(error, "Uploading failed: ", err_buf);
+  if(err == FileErr::STREAM_ERR) {
+    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    print(error, "Uploading failed: ", err);
 
     print(*_socket, 
       _response::INTERNAL_ERROR,
-      "Uploading failed: ", err_buf);
+      "Uploading failed: ", err);
 
     return -1;
   }
+
   if(err == FileErr::TIMEOUT) {
-    print(error, "Uploading failed: Timeout");
+    print(error, "Downloading failed: Timeout");
     print(*_socket,
       _response::INTERNAL_ERROR,
-      "Uploading failed: Timeout");
+      "Downloading failed: Timeout");
+    
+    return -1;
+  }   
+  if(err == FileErr::COPY_STREAM_ERR) { 
+    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    print(error, "Downloading failed: ", err);
+
+    print(*_socket,
+      _response::INTERNAL_ERROR,
+      "Downloading failed: ", err);
 
     return -1;
   }
@@ -257,25 +302,11 @@ int requestRemoveDocument::exec(Database &db) {
     return -1;
   }
 
-  /* root/idUser/ */
-  std::string path = config::storage.root;
-  if(path.back() != '/') {
-    path += '/';
-  }
-  path.append(std::to_string(idUser));
-  path += '_';
+  if(std::remove(getDocPath(idUser, idPage).c_str())) {
+    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
 
-  path.append(std::to_string(idPage));
-  path += ".txt";
-
-  ioFile out(1);
-  out.access(path);
-
-  if(std::remove(path.c_str())) {
-    strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
-
-    print(*_socket, _response::INTERNAL_ERROR, err_buf);
-    print(error, err_buf);
+    print(*_socket, _response::INTERNAL_ERROR, err);
+    print(error, err);
 
     return -1;
   }
