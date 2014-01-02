@@ -13,7 +13,6 @@
 
 #include "log.h"
 #include "config.h"
+#include "err.h"
 
-constexpr int MAX_ERROR_BUFFER = 120;
-thread_local extern char err_buf[MAX_ERROR_BUFFER];
 #endif

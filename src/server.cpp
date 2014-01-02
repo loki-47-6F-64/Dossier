@@ -105,7 +105,7 @@ void Server::_listen() {
 			
     }
     else if(result == -1) {
-      print(error, "Cannot poll socket: ", strerror_r(errno, err_buf, MAX_ERROR_BUFFER));
+      print(error, "Cannot poll socket: ", sys_err());
 
       exit(EXIT_FAILURE);
     }

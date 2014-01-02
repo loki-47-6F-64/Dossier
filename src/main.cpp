@@ -10,7 +10,6 @@
 
 typedef unsigned char byte;
 
-thread_local char err_buf[MAX_ERROR_BUFFER];
 void start_server() {
 	Server s;
 
@@ -50,7 +49,7 @@ void start_server() {
     req->exec(db);
   }
   ) < 0) {
-		print(error, "Can't set listener: ", strerror_r(errno, err_buf, MAX_ERROR_BUFFER));
+		print(error, "Can't set listener: ", sys_err());
 
     return;
 	}
@@ -68,12 +67,11 @@ int main() {
 
   log_open("out.log");
   if(Server::init(config::server.certPath, config::server.keyPath)) {
-    int err;
+    const char* err;
 
     // Empty error queue
-    while((err = ERR_get_error())) {
-      ERR_error_string_n(err, err_buf, MAX_ERROR_BUFFER);
-      print(error, "Failed to init ssl:", err_buf);
+    while((err = ssl_err())) {
+      print(error, "Failed to init ssl:", err);
     }
     return -1;
   }

@@ -102,7 +102,7 @@ int requestDownload::exec(Database &db) {
   int err = page.copy(*_socket);
 
   if(err == FileErr::STREAM_ERR) {
-    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    const char *err = sys_err();
     print(error, "Downloading failed: ", err);
 
     print(*_socket,
@@ -120,7 +120,7 @@ int requestDownload::exec(Database &db) {
     return -1;
   }
   if(err == FileErr::COPY_STREAM_ERR) {
-    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    const char *err = sys_err();
     print(error, "Downloading failed: ", err);
 
     print(*_socket,
@@ -169,7 +169,7 @@ int requestUpload::exec(Database &db) {
   int err = _socket->copy(out, size);
 
   if(err == FileErr::STREAM_ERR) {
-    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    const char *err = sys_err();
     print(error, "Uploading failed: ", err);
 
     print(*_socket, 
@@ -188,7 +188,7 @@ int requestUpload::exec(Database &db) {
     return -1;
   }   
   if(err == FileErr::COPY_STREAM_ERR) { 
-    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    const char *err = sys_err();
     print(error, "Downloading failed: ", err);
 
     print(*_socket,
@@ -303,7 +303,7 @@ int requestRemoveDocument::exec(Database &db) {
   }
 
   if(std::remove(getDocPath(idUser, idPage).c_str())) {
-    const char *err = strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
+    const char *err = sys_err();
 
     print(*_socket, _response::INTERNAL_ERROR, err);
     print(error, err);
