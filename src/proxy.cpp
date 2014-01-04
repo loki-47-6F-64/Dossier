@@ -81,7 +81,7 @@ std::string getDocPath(int64_t idUser, int64_t idPage) {
   path += '_';
 
   path.append(std::to_string(idPage));
-  path += ".txt";
+  path += ".pdf";
 
   return path;
 }

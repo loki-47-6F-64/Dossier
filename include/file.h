@@ -40,6 +40,15 @@ public:
     cacheSize = other.cacheSize;
   }
 
+  void operator=(FD&& other) {
+    _stream = std::move(other._stream);
+    _cache  = std::move(other._cache);
+
+    _data_p = _cache.cbegin();
+    _microsec = other._microsec;
+    cacheSize = other.cacheSize;
+  }
+
 	FD(int cacheSize, long microsec = -1) 
       : cacheSize(cacheSize), _microsec(microsec) {}
 

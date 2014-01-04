@@ -93,6 +93,9 @@ void Server::_listen() {
 					DEBUG_LOG("Accepting client");
 	
           Client client = ssl_accept(Server::_ssl_ctx.get(), poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size);
+          if(client.socket.get() == nullptr) {
+            continue;
+          }
 
           std::thread t(_action[x], std::move(client));
           t.detach();

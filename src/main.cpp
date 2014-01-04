@@ -54,6 +54,15 @@ void start_server() {
     return;
 	}
 
+  if(s.addListener(8081, 20, [&](Client &&client) {
+    ioFile out(1024, -1, dup(STDOUT_FILENO));
+
+    client.socket->copy(out);
+  }) <= 0) {
+    print(error, "Can't set listener: ", sys_err());
+
+    return;
+  }
 	s();
 }
 
