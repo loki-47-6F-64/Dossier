@@ -22,7 +22,8 @@ public:
 //	~Database();
 
 	std::vector<meta_doc> search(int64_t idUser, std::string &company,
-    int year, int month, int day);
+    int year, int month, int day,
+    std::vector<std::string>& keywords);
 
 	meta_doc getFile(int64_t idUser, int64_t idPage);
 

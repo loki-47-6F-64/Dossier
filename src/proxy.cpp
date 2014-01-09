@@ -58,7 +58,7 @@ int requestSearch::exec(Database &db) {
   }
 
   _socket->clear();
-  std::vector<meta_doc> result = db.search(idUser, company, year, month, day);
+  std::vector<meta_doc> result = db.search(idUser, company, year, month, day, keywords);
  
   _socket->append(CHAR(_response::OK));
   for(auto& doc : result) {

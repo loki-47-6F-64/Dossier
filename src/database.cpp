@@ -77,7 +77,8 @@ int64_t Database::validateUser(std::string& username) {
 }
 
 std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
-  int year, int month, int day)
+  int year, int month, int day,
+  std::vector<std::string>& keywords)
 {
   _sql.sanitize(company);
 
@@ -97,6 +98,15 @@ std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
 
   if(year) {
     query << " AND YEAR(doc.created)='" << year << '\'';
+  }
+
+  if(!keywords.empty()) {
+    query << " AND MATCH(doc.content) AGAINST('";
+    size_t size = keywords.size();
+    for(size_t x = 0; x+1 < size; ++x) {
+      query << keywords[x] << ',';
+    }
+    query << keywords.back() << "')";
   }
 
   std::vector<meta_doc> result;
