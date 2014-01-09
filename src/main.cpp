@@ -10,6 +10,7 @@
 
 typedef unsigned char byte;
 
+#define CHAR(x) static_cast<char>(x)
 void start_server() {
 	Server s;
 
@@ -18,7 +19,7 @@ void start_server() {
 
     if(db.err_msg) {
       print(*client.socket, 
-        _response::INTERNAL_ERROR,
+        CHAR(_response::INTERNAL_ERROR),
         "Could not connect to database.");
       print(error, db.err_msg);
 
@@ -30,7 +31,7 @@ void start_server() {
 
     if(db.err_msg) {
       print(*client.socket,
-        _response::INTERNAL_ERROR,
+        CHAR(_response::INTERNAL_ERROR),
         "User ", cn, " not found.");
 
       print(error, "User ", cn, " not found.");

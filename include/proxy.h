@@ -20,7 +20,7 @@ constexpr int MAX_PARAMETERS = 10;
 class Database;
 
 namespace _req_code {
-  enum {
+  enum : char {
     SEARCH,
     LIST_COMPANIES,
     DOWNLOAD,
@@ -32,7 +32,7 @@ namespace _req_code {
 };
 
 namespace _response {
-  enum {
+  enum : char {
     OK,
     INTERNAL_ERROR,
     CORRUPT_REQUEST

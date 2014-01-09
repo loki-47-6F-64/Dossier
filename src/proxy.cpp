@@ -4,6 +4,7 @@
 #include "file.h"
 #include "database.h"
 
+#define CHAR(x) static_cast<char>(x)
 std::unique_ptr<requestBase> getRequest(sslFile *socket) {
   std::unique_ptr<requestBase> _req;
 	switch (socket->next()) {
@@ -48,7 +49,7 @@ int requestSearch::exec(Database &db) {
       err_msg = ssl_err();
     }
     print(*_socket,
-      _response::CORRUPT_REQUEST,
+      CHAR(_response::CORRUPT_REQUEST),
       err_msg);
 
     print(error, err_msg);
@@ -58,7 +59,7 @@ int requestSearch::exec(Database &db) {
   _socket->clear();
   std::vector<meta_doc> result = db.search(idUser, company, year, month, day);
  
-  _socket->append(_response::OK);
+  _socket->append(CHAR(_response::OK));
   for(auto& doc : result) {
     _socket->
        append(doc.created).append('\0')
@@ -99,7 +100,7 @@ int requestDownload::exec(Database &db) {
     }
 
     print(*_socket,
-      _response::CORRUPT_REQUEST,
+      CHAR(_response::CORRUPT_REQUEST),
       err_msg);
 
     print(error, err_msg);
@@ -111,7 +112,7 @@ int requestDownload::exec(Database &db) {
   ioFile page(1024);
   page.access(path);
 
-  print(*_socket, _response::OK);
+  print(*_socket, CHAR(_response::OK));
   int err = page.copy(*_socket);
 
   if(err == FileErr::STREAM_ERR) {
@@ -119,7 +120,7 @@ int requestDownload::exec(Database &db) {
     print(error, "Downloading failed: ", err);
 
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       "Downloading failed: ", err);
 
     return -1;
@@ -127,7 +128,7 @@ int requestDownload::exec(Database &db) {
   if(err == FileErr::TIMEOUT) {
     print(error, "Downloading failed: Timeout");
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       "Downloading failed: Timeout");
 
     return -1;
@@ -137,7 +138,7 @@ int requestDownload::exec(Database &db) {
     print(error, "Downloading failed: ", err);
 
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       "Downloading failed: ", err);
 
     return -1;
@@ -159,7 +160,7 @@ int requestUpload::exec(Database &db) {
     }
 
     print(*_socket,
-      _response::CORRUPT_REQUEST,
+      CHAR(_response::CORRUPT_REQUEST),
       err_msg);
 
     print(error, err_msg);
@@ -168,14 +169,14 @@ int requestUpload::exec(Database &db) {
   int64_t idPage = db.newDocument(idUser, company);
 
   if(db.err_msg) {
-    _socket->clear();
-
     err_msg = db.err_msg;
 
     print(error, db.err_msg);
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       db.err_msg);
+
+    return -1;
   }
 
   std::string path = getDocPath(idUser, idPage);
@@ -192,7 +193,7 @@ int requestUpload::exec(Database &db) {
     print(error, "Uploading failed: ", err);
 
     print(*_socket, 
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       "Uploading failed: ", err);
 
     return -1;
@@ -201,7 +202,7 @@ int requestUpload::exec(Database &db) {
   if(err == FileErr::TIMEOUT) {
     print(error, "Downloading failed: Timeout");
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       "Downloading failed: Timeout");
     
     return -1;
@@ -211,13 +212,13 @@ int requestUpload::exec(Database &db) {
     print(error, "Downloading failed: ", err);
 
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       "Downloading failed: ", err);
 
     return -1;
   }
 
-  print(*_socket, _response::OK);
+  print(*_socket, CHAR(_response::OK));
 
   return 0;
 }
@@ -235,7 +236,7 @@ int requestNewCompany::exec(Database &db) {
     }
 
     print(*_socket,
-      _response::CORRUPT_REQUEST,
+      CHAR(_response::CORRUPT_REQUEST),
       err_msg);
 
     print(error, err_msg);
@@ -244,14 +245,14 @@ int requestNewCompany::exec(Database &db) {
 
   if(db.newCompany(name, idUser)) {
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       db.err_msg);
 
     print(error, db.err_msg);
     return -1;
   }
 
-  print(*_socket, _response::OK);
+  print(*_socket, CHAR(_response::OK));
 
   return 0;
 }
@@ -264,13 +265,13 @@ int requestListCompanies::exec(Database &db) {
   if(db.err_msg) {
     print(error, db.err_msg);
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       db.err_msg);
 
     return -1;
   }
 
-  _socket->clear().append(_response::OK);
+  _socket->clear().append(CHAR(_response::OK));
 
   for(auto& company : companies) {
     _socket->
@@ -295,7 +296,7 @@ int requestRemoveCompany::exec(Database &db) {
     }
 
     print(*_socket,
-      _response::CORRUPT_REQUEST,
+      CHAR(_response::CORRUPT_REQUEST),
       err_msg);
 
     print(error, err_msg);
@@ -304,14 +305,14 @@ int requestRemoveCompany::exec(Database &db) {
 
   if(db.removeCompany(company, idUser)) {
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       db.err_msg);
 
     print(error, db.err_msg);
     return -1;
   }
 
-  print(*_socket, _response::OK);
+  print(*_socket, CHAR(_response::OK));
   return 0;
 }
 
@@ -328,7 +329,7 @@ int requestRemoveDocument::exec(Database &db) {
     }
 
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       db.err_msg);
 
     print(error, db.err_msg);
@@ -338,7 +339,7 @@ int requestRemoveDocument::exec(Database &db) {
   DEBUG_LOG("Removing idPage:", idPage);
   if(db.removeDocument(idPage, idUser)) {
     print(*_socket,
-      _response::INTERNAL_ERROR,
+      CHAR(_response::INTERNAL_ERROR),
       db.err_msg);
 
     print(error, db.err_msg);
@@ -348,12 +349,12 @@ int requestRemoveDocument::exec(Database &db) {
   if(std::remove(getDocPath(idUser, idPage).c_str())) {
     const char *err = sys_err();
 
-    print(*_socket, _response::INTERNAL_ERROR, err);
+    print(*_socket, CHAR(_response::INTERNAL_ERROR), err);
     print(error, err);
 
     return -1;
   }
 
-  print(*_socket, _response::OK);
+  print(*_socket, CHAR(_response::OK));
   return 0;
 }

@@ -113,13 +113,15 @@ public:
   	return _cache.empty() ? '\0' : *_data_p++;
 	}
 
-  int eachByte(std::function<bool(unsigned char)> f) {
+  int eachByte(std::function<int(unsigned char)> f) {
     while(!eof()) {
       if(end_of_buffer()) {
         int err;
         if((err = load(cacheSize))) {
           return err;
         }
+
+        continue;
       }
 
       int custom_err;
@@ -157,7 +159,15 @@ public:
     return append(std::to_string(integer));
   }
 
+  inline FD& append(unsigned long integer) {
+    return append(std::to_string(integer));
+  }
+
   inline FD& append(int integer) {
+    return append(std::to_string(integer));
+  }
+
+  inline FD& append(unsigned int integer) {
     return append(std::to_string(integer));
   }
 
@@ -167,6 +177,8 @@ public:
 
   inline FD& clear() {
     _cache.clear();
+    _data_p = _cache.cbegin();
+
 
     return *this;
   }
