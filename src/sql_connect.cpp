@@ -1,3 +1,4 @@
+#include <memory>
 #include "sql_connect.h"
 
 SqlConnect::SqlConnect() : _res(nullptr) {
@@ -53,3 +54,11 @@ void SqlConnect::close() {
 }
 
 int64_t SqlConnect::idInserted() { return mysql_insert_id(&_con); }
+
+void SqlConnect::sanitize(std::string &input) {
+  std::unique_ptr<char[]> buf(new char[input.size() *2 +1]);
+  mysql_real_escape_string(&_con, buf.get(), input.c_str(), input.size());
+
+  input = buf.get();
+}
+

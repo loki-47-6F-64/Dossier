@@ -20,7 +20,7 @@ Database::Database() {
 int Database::newUser(std::string &username,
                   		std::string &email)
 {
-  sanitize(username); sanitize(email);
+  _sql.sanitize(username); _sql.sanitize(email);
 	std::ostringstream query;
 
 	query << "INSERT INTO user (username, email, password) VALUES ('";
@@ -48,7 +48,7 @@ int Database::removeDocument(int64_t idPage, int64_t idUser) {
 }
 
 int64_t Database::validateUser(std::string& username) {
-  sanitize(username);
+  _sql.sanitize(username);
 
 	std::ostringstream query;
 
@@ -79,7 +79,7 @@ int64_t Database::validateUser(std::string& username) {
 std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
   int year, int month, int day)
 {
-  sanitize(company);
+  _sql.sanitize(company);
 
   std::ostringstream query;
   query << "SELECT doc.idPage, Company.name, doc.created FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" << idUser << '\'';
@@ -145,7 +145,7 @@ meta_doc Database::getFile(int64_t idUser, int64_t idPage) {
 }
 
 int64_t Database::newDocument(int64_t idUser, std::string &company) {
-  sanitize(company);
+  _sql.sanitize(company);
 
   std::ostringstream query;
   query << "INSERT INTO Document (user_idUser, Company_idCompany) VALUES (" << idUser << ", (SELECT idCompany FROM Company WHERE Company.user_idUser=" << idUser << " AND Company.name='" << company << "' LIMIT 1))";
@@ -158,7 +158,7 @@ int64_t Database::newDocument(int64_t idUser, std::string &company) {
 }
 
 int Database::newCompany(std::string &name, int64_t idUser) {
-  sanitize(name);
+  _sql.sanitize(name);
 
   std::ostringstream query;
 
@@ -174,7 +174,7 @@ int Database::newCompany(std::string &name, int64_t idUser) {
 }
 
 int Database::removeCompany(std::string &name, int64_t idUser) {
-  sanitize(name);
+  _sql.sanitize(name);
 
   std::ostringstream query;
 
@@ -206,8 +206,3 @@ std::vector<std::string> Database::listCompany(int64_t idUser) {
 
   return result;
 }
-
-void Database::sanitize(std::string& input) {
-  // Todo: sanitize logic
-}
-

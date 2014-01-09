@@ -46,7 +46,8 @@ int requestSearch::exec(Database &db) {
       return -1;
     } 
     if(req_errno == FileErr::STREAM_ERR) {
-      err_msg = ssl_err();
+      ssl_print_err(error);
+      return -1;
     }
     print(*_socket,
       CHAR(_response::CORRUPT_REQUEST),
@@ -96,7 +97,8 @@ int requestDownload::exec(Database &db) {
       return -1;
     } 
     if(req_errno == FileErr::STREAM_ERR) {
-      err_msg = ssl_err();
+      ssl_print_err(error);
+      return -1;
     }
 
     print(*_socket,
@@ -156,7 +158,8 @@ int requestUpload::exec(Database &db) {
       return -1;
     }
     if(req_errno == FileErr::STREAM_ERR) {
-      err_msg = ssl_err();
+      ssl_print_err(error);
+      return -1;
     }
 
     print(*_socket,
@@ -232,7 +235,8 @@ int requestNewCompany::exec(Database &db) {
       return -1;
     }
     if(req_errno == FileErr::STREAM_ERR) {
-      err_msg = ssl_err();
+      ssl_print_err(error);
+      return -1;
     }
 
     print(*_socket,
@@ -292,7 +296,8 @@ int requestRemoveCompany::exec(Database &db) {
       return -1;
     }
     if(req_errno == FileErr::STREAM_ERR) {
-      err_msg = ssl_err();
+      ssl_print_err(error);
+      return -1;
     }
 
     print(*_socket,
@@ -325,7 +330,8 @@ int requestRemoveDocument::exec(Database &db) {
       return -1;
     }
     if(req_errno == FileErr::STREAM_ERR) {
-      err_msg = ssl_err();
+      ssl_print_err(error);
+      return -1;
     }
 
     print(*_socket,

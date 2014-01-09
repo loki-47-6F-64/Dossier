@@ -36,6 +36,8 @@ public:
 
 	const char *error();
 
+  void sanitize(std::string &input);
+
 	void close();	
 };
 

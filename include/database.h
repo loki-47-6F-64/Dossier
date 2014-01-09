@@ -40,9 +40,6 @@ public:
   int removeCompany(std::string &name, int64_t idUser);
 
   std::vector<std::string> listCompany(int64_t idUser);
-
-private:
-  static void sanitize(std::string &input);
 };
 
 #endif

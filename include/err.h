@@ -7,4 +7,16 @@
 const char *sys_err();
 const char *ssl_err();
 
+template<class File>
+void ssl_print_err(File &out) {
+  const char *err;
+  while((err = ssl_err())) {
+    out.append(err).append('\n');
+  }
+
+  if(!out.getCache().empty()) {
+    out.out();
+  }
+}
+
 #endif
