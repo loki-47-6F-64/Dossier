@@ -216,3 +216,19 @@ std::vector<std::string> Database::listCompany(int64_t idUser) {
 
   return result;
 }
+
+int Database::setDocContent(int64_t idPage, std::string &content) {
+  _sql.sanitize(content);
+
+  std::ostringstream query;
+
+  query << "UPDATE Document SET content='" << content << "'"
+          " WHERE idPage=" << idPage;
+
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return -1;
+  }
+
+  return 0;
+}

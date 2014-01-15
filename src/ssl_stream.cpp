@@ -46,6 +46,7 @@ void _SslStream::seal() {
   int _fd = fd();
 
   SSL_free(_ssl);
+  _ssl = nullptr;
 
   ::close(_fd);  
 }

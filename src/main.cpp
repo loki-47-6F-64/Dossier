@@ -7,6 +7,7 @@
 #include "server.h"
 #include "proxy.h"
 #include "database.h"
+#include "proc.h"
 
 typedef unsigned char byte;
 
@@ -68,6 +69,27 @@ void start_server() {
 }
 
 int main() {
+  /*
+  const char *args[] = {
+    "pdftotext",
+    "t", "-",
+    nullptr
+  };
+
+  std::string content = "";
+  Proc proc = proc_open(*args, args, pipeType::READ);
+
+  ioFile fout(1024, -1, dup(1));
+  ioFile fin(1024, -1, dup(0));
+
+  //proc.fpipe.copy(fout);
+  proc.fpipe.eachByte([&](unsigned char ch) {
+    content.push_back(ch);
+    return 0;
+  });
+
+  print(fout, content);
+  */
   ioFile io_out(1, dup(STDOUT_FILENO));
 
   if(config::file("./dossier.conf")) {

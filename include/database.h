@@ -31,6 +31,8 @@ public:
  	int64_t newDocument(int64_t idUser, std::string &company);
   int removeDocument(int64_t idPage, int64_t idUser);
 
+  int setDocContent(int64_t idPage, std::string &content);
+
   // Return id user
 	int64_t validateUser(std::string& username);
 

@@ -1,6 +1,6 @@
 #include "main.h"
 #include "proxy.h"
-
+#include "proc.h"
 #include "file.h"
 #include "database.h"
 
@@ -222,6 +222,34 @@ int requestUpload::exec(Database &db) {
   }
 
   print(*_socket, CHAR(_response::OK));
+
+  _socket->seal();
+  const char *args[] = {
+    "pdftotext",
+    path.c_str(), "-",
+    nullptr
+  };
+
+  Proc proc = proc_open(*args, args, pipeType::READ);
+  if(proc.pid >= 0) {
+
+    std::string content;
+    out.access(path);
+
+    if(proc.fpipe.eachByte([&](unsigned char ch) {
+      content.push_back(ch);
+      return 0;
+    }))
+    {
+      print(error, sys_err());
+      return -1;
+    }
+
+    if(db.setDocContent(idPage, content)) {
+      print(error, db.err_msg);
+      return -1;
+    }
+  }
 
   return 0;
 }

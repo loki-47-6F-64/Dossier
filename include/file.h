@@ -59,8 +59,7 @@ public:
 	}
 
 	~FD() {
-		if(is_open())
-			seal();
+    seal();
 	}
 
 	// Load file into _cache.data(), replaces old _cache.data()
@@ -70,20 +69,9 @@ public:
 	int load(size_t max_bytes) {
 		_cache.resize(max_bytes);
 
-    if(_microsec >= 0) {
-      timeval tv { 0, _microsec };
-
-      fd_set read;
-
-      FD_ZERO(&read);
-      FD_SET(_stream.fd(), &read);
-
-      int f = select(_stream.fd() + 1, &read, nullptr, nullptr, &tv);
-      if(f <= 0) {
-        /* f ==  0 -> return  1
-           f == -1 -> return -1 */
-        return 1 + 2*f;
-      }
+    int err;
+    if((err = _select(true))) {
+      return err;
     }
 
   	if((_stream >> _cache) < 0)
@@ -95,6 +83,12 @@ public:
 
 	// Write to file
 	inline int out() {
+    int err;
+    if((err = _select(true))) {
+      return err;
+    }
+
+    // On success clear
 		if((_stream << _cache) >= 0) {
       clear();
       return FileErr::OK;
@@ -188,8 +182,7 @@ public:
   }
 
   int access(std::string& path) {
-    if(is_open())
-      seal();
+    seal();
 
     return _stream.access(path);
   }
@@ -198,7 +191,11 @@ public:
 	inline bool eof() { return _stream.eof(); }
 	inline bool end_of_buffer() {return _data_p == _cache.cend();}
 	inline bool is_open() { return _stream.is_open(); }
-	inline void seal() { _stream.seal(); }
+
+	inline void seal() {
+    if(is_open())
+      _stream.seal();
+  }
 
 
   /* 
@@ -232,6 +229,37 @@ public:
       }
     }
     return FileErr::OK;
+  }
+private:
+
+  int _select(bool read) {
+    if(_microsec >= 0) {
+      timeval tv { 0, _microsec };
+
+      fd_set selected;
+
+      FD_ZERO(&selected);
+      FD_SET(_stream.fd(), &selected);
+
+      fd_set *read, *write;
+      if(read) {
+        read = &selected;
+        write = nullptr;
+      }
+      else {
+        write = &selected;
+        read = nullptr;
+      }
+
+      int f = select(_stream.fd() + 1, read, write, nullptr, &tv);
+      if(f <= 0) {
+        /* f ==  0 -> return  1
+           f == -1 -> return -1 */
+        return 1 + 2*f;
+      }
+    }
+
+    return 0;
   }
 };
 
