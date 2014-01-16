@@ -1,0 +1,4 @@
+Dossier allows you to archive documents for future retrieval.
+
+Authentication is done using certificates.
+If the certificate from the client is accepted, the user will be identified using the Common Name in the certificate.
