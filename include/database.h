@@ -10,6 +10,7 @@
 struct meta_doc {
   int64_t id;
   std::string company;
+  std::string preview;
   std::string created;
 };
 

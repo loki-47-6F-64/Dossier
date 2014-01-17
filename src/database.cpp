@@ -83,7 +83,7 @@ std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
   _sql.sanitize(company);
 
   std::ostringstream query;
-  query << "SELECT doc.idPage, Company.name, doc.created FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" << idUser << '\'';
+  query << "SELECT doc.idPage, Company.name, doc.content, doc.created FROM Document AS doc INNER JOIN (Company) ON (Company.idCompany=doc.Company_idCompany) WHERE doc.user_idUser='" << idUser << '\'';
   if(!company.empty()) {
     query << " AND Company.name='" << company << '\'';
   }
@@ -118,10 +118,12 @@ std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
   _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
     std::string idPage(*row, *lengths);
 
+    int previewLength = lengths[2] > 30 ? 30 : lengths[2];
     meta_doc tmp {
       std::stol(idPage),
-      std::string(row[1], lengths[1]),
-      std::string(row[2], lengths[2])
+      std::string(row[1], lengths[1]), // company
+      std::string(row[2], previewLength), // preview of content
+      std::string(row[3], lengths[3])  // date
     };
 
     result.push_back(std::move(tmp));

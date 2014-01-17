@@ -79,7 +79,7 @@ Context init_ssl(std::string& certPath, std::string& keyPath) {
 }
 
 Client ssl_accept(SSL_CTX *ctx, int fd, sockaddr *client_addr, uint32_t* addr_size) {
-  constexpr long buffer_size = 1024, timeout = 300000;
+  constexpr long buffer_size = 1024, timeout = 3000000;
   Client client;
   int clientFd = accept(fd, client_addr, addr_size);
 

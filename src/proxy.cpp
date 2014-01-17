@@ -66,10 +66,25 @@ int requestSearch::exec(Database &db) {
        append(doc.created).append('\0')
       .append(doc.company).append('\0')
       .append(std::to_string(doc.id)).append('\0');
+
+    if(doc.preview.empty()) {
+      doc.preview = "--";
+    }
+
+    _socket->append(doc.preview).append('\0');
   }
 
-  _socket->
-    append('\0').out();
+  int err = _socket->append('\0').out();
+
+  if(err == FileErr::TIMEOUT) {
+    print(error, "socket Timeout");
+    return -1;
+  }
+  else if(err) {
+    print(error, sys_err(), '\n');
+    ssl_print_err(error);
+    return -1;
+  }
  
   return 0;
 }
