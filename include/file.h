@@ -20,6 +20,8 @@ namespace FileErr {
 /* Represents file in memory, storage or socket */
 template <class Stream, class... Args>
 class FD /* File descriptor */ {
+  static constexpr int READ = 0, WRITE = 1;
+
 	Stream _stream;
 
 	std::vector<unsigned char> _cache;
@@ -70,7 +72,7 @@ public:
 		_cache.resize(max_bytes);
 
     int err;
-    if((err = _select(true))) {
+    if((err = _select(READ))) {
       return err;
     }
 
@@ -84,7 +86,7 @@ public:
 	// Write to file
 	inline int out() {
     int err;
-    if((err = _select(true))) {
+    if((err = _select(WRITE))) {
       return err;
     }
 
@@ -232,7 +234,7 @@ public:
   }
 private:
 
-  int _select(bool read) {
+  int _select(const int read) {
     if(_microsec >= 0) {
       timeval tv { 0, _microsec };
 
@@ -241,21 +243,18 @@ private:
       FD_ZERO(&selected);
       FD_SET(_stream.fd(), &selected);
 
-      fd_set *read, *write;
-      if(read) {
-        read = &selected;
-        write = nullptr;
+      int result;
+      if(read == READ) {
+        result = select(_stream.fd() + 1, &selected, nullptr, nullptr, &tv);
       }
-      else {
-        write = &selected;
-        read = nullptr;
+      else if(read == WRITE) {
+        result = select(_stream.fd() + 1, nullptr, &selected, nullptr, &tv);
       }
 
-      int f = select(_stream.fd() + 1, read, write, nullptr, &tv);
-      if(f <= 0) {
+      if(result <= 0) {
         /* f ==  0 -> return  1
            f == -1 -> return -1 */
-        return 1 + 2*f;
+        return 1 + 2*result;
       }
     }
 
