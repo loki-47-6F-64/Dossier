@@ -65,7 +65,7 @@ int64_t Database::validateUser(std::string& username) {
   bool rejected = true;
 
   int64_t id = 0;
-	_sql.eachRow([&](MYSQL_ROW row, uint64_t*) {
+	_sql.eachRow([&](MYSQL_ROW row, unsigned long*) {
     rejected = false;
 
     id = std::strtol(*row, nullptr, 10);
@@ -115,7 +115,7 @@ std::vector<meta_doc> Database::search(int64_t idUser, std::string &company,
     return result;
   }
 
-  _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
+  _sql.eachRow([&](MYSQL_ROW row, unsigned long*lengths) {
     std::string idPage(*row, *lengths);
 
     int previewLength = lengths[2] > 30 ? 30 : lengths[2];
@@ -144,7 +144,7 @@ meta_doc Database::getFile(int64_t idUser, int64_t idPage) {
     return result;
   }
 
-  _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
+  _sql.eachRow([&](MYSQL_ROW row, unsigned long*lengths) {
     char *dummy;
   
     std::string idPage(*row, *lengths);
@@ -212,7 +212,7 @@ std::vector<std::string> Database::listCompany(int64_t idUser) {
     return result;
   }
 
-  _sql.eachRow([&](MYSQL_ROW row, uint64_t *lengths) {
+  _sql.eachRow([&](MYSQL_ROW row, unsigned long*lengths) {
     result.push_back(std::string(*row, *lengths));
   });
 

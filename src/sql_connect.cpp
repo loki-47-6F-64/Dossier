@@ -33,7 +33,7 @@ unsigned int SqlConnect::totalFields() {
 	return mysql_num_fields(_res);
 }
 
-void SqlConnect::eachRow(std::function<void(MYSQL_ROW, uint64_t*)> f) {
+void SqlConnect::eachRow(std::function<void(MYSQL_ROW, unsigned long*)> f) {
 	MYSQL_ROW row;
 	while((row = mysql_fetch_row(_res))) {
 		f(row, mysql_fetch_lengths(_res));
@@ -42,7 +42,7 @@ void SqlConnect::eachRow(std::function<void(MYSQL_ROW, uint64_t*)> f) {
 
 const char *SqlConnect::error() { return mysql_error(&_con); }
 
-unsigned int SqlConnect::totalRows() { return mysql_affected_rows(&_con); }
+my_ulonglong SqlConnect::totalRows() { return mysql_affected_rows(&_con); }
 
 void SqlConnect::close() {
 	if(_res != nullptr) {
@@ -53,7 +53,7 @@ void SqlConnect::close() {
 	mysql_close(&_con);
 }
 
-int64_t SqlConnect::idInserted() { return mysql_insert_id(&_con); }
+my_ulonglong SqlConnect::idInserted() { return mysql_insert_id(&_con); }
 
 void SqlConnect::sanitize(std::string &input) {
   std::unique_ptr<char[]> buf(new char[input.size() *2 +1]);

@@ -24,15 +24,15 @@ public:
 	// Returned MYSQL struct should not be used
 	MYSQL* open(const char *host, const char *user, const char *passwd);
 
-	void eachRow(std::function<void(MYSQL_ROW, uint64_t*)> f);
+	void eachRow(std::function<void(MYSQL_ROW, unsigned long*)> f);
 
 	void setdb(const char *db);
 
 	unsigned int totalFields();
-	unsigned int totalRows();
+	my_ulonglong totalRows();
 
   /* Return id of last insert */
-  int64_t idInserted();
+  ulonglong idInserted();
 
 	const char *error();
 
