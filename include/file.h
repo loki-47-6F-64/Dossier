@@ -135,12 +135,6 @@ public:
     return *this;
 	}
 
-	inline FD& append(std::string &buffer) {
-		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
-
-    return *this;
-	}
-
   inline FD& append(unsigned char ch) {
     _cache.push_back(ch);
 
@@ -149,6 +143,14 @@ public:
 
   inline FD& append(char ch) {
     return append(static_cast<unsigned char>(ch));
+  }
+
+  inline FD& append(long long integer) {
+    return append(std::to_string(integer));
+  }
+
+  inline FD& append(unsigned long long integer) {
+    return append(std::to_string(integer));
   }
 
   inline FD& append(long integer) {
@@ -165,6 +167,12 @@ public:
 
   inline FD& append(unsigned int integer) {
     return append(std::to_string(integer));
+  }
+
+  inline FD& append(std::string &buffer) {
+    _cache.insert(_cache.end(), buffer.begin(), buffer.end());
+
+    return *this;
   }
 
   inline FD& append(std::string &&buffer) {
