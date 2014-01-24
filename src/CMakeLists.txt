@@ -1,6 +1,12 @@
 cmake_minimum_required (VERSION 2.6)
 
 #################################################################
+#include compilers
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
+
+project(Dossier)
+#################################################################
 #include libraries
 
 execute_process(COMMAND mysql_config --libs OUTPUT_VARIABLE MYSQL_LIBS)
@@ -12,9 +18,6 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MYSQL_LIBS} -lcrypto -ls
 
 #################################################################
 #include compiler flags
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -57,5 +60,4 @@ endforeach(included)
 
 ###################################################################
 
-project (Dossier)
 add_executable(dossier.out ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
