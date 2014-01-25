@@ -1,0 +1,10 @@
+[Unit]
+Description=Digital Archiving Software
+Requires=mysqld.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/dossier /etc/dossier/dossier.conf
+
+[Install]
+Alias=dossier.service
