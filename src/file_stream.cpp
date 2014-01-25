@@ -3,6 +3,23 @@
 
 #include "stream.h"
 
+int fileStreamRead(_FileStream& fs, const char *file_path) {
+  int _fd = ::open(file_path, O_RDONLY, 0);
+  
+  fs.open(_fd);
+  return fs.is_open() == false;
+}
+
+int fileStreamWrite(_FileStream& fs, const char *file_path) {
+  int _fd = ::open(file_path,
+               O_CREAT | O_APPEND | O_WRONLY,
+               S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+  );
+  
+  fs.open(_fd);
+  return fs.is_open() == false;
+}
+
 _FileStream::_FileStream() : _fd(-1), _eof(false) {}
 void _FileStream::open(int fd) {
 	_fd = fd;
@@ -33,16 +50,6 @@ int _FileStream::operator>>(std::vector<unsigned char>& buf) {
 
 int _FileStream::operator<<(std::vector<unsigned char>&buf) {
 	return write(_fd, buf.data(), buf.size());
-}
-
-int _FileStream::access(std::string& path) {
-	_fd = ::open(path.c_str(),
-               O_CREAT | O_APPEND | O_RDWR,
-               S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
-  );
-	_eof= false;
-
-	return _fd;
 }
 
 void _FileStream::seal() {

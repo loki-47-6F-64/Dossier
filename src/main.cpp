@@ -68,36 +68,20 @@ void start_server() {
 	s();
 }
 
-int main() {
-  /*
-  const char *args[] = {
-    "pdftotext",
-    "t", "-",
-    nullptr
-  };
+int main(int args, char *argv[]) {
+  const char *conf_path = "./dossier.conf";
+  if(args > 1) {
+    conf_path = argv[1];
+  }
 
-  std::string content = "";
-  Proc proc = proc_open(*args, args, pipeType::READ);
-
-  ioFile fout(1024, -1, dup(1));
-  ioFile fin(1024, -1, dup(0));
-
-  //proc.fpipe.copy(fout);
-  proc.fpipe.eachByte([&](unsigned char ch) {
-    content.push_back(ch);
-    return 0;
-  });
-
-  print(fout, content);
-  */
   ioFile io_out(1, dup(STDOUT_FILENO));
 
-  if(config::file("./dossier.conf")) {
+  if(config::file(conf_path)) {
     io_out.append(config::err_msg).append("\n").out();
     return -1;
   }
 
-  log_open("out.log");
+  log_open(config::storage.log.c_str());
   if(Server::init(config::server.certPath, config::server.keyPath)) {
     const char* err;
 

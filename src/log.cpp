@@ -8,11 +8,15 @@ LogFile debug  (1024, -1, " Debug: "  , -1);
 std::mutex _LogStreamBase::_lock;
 char _LogStreamBase::_date[DATE_BUFFER_SIZE];
 
+int logStreamWrite(_LogStream<FileStream> &ls, const char *path) {
+  return ls.access(path, fileStreamWrite);
+}
+
 void log_open(const char *logPath) {
-  error  .access(logPath);
-  warning.access(logPath);
-  info   .access(logPath);
-  debug  .access(logPath);
+  error  .access(logPath, logStreamWrite);
+  warning.access(logPath, logStreamWrite);
+  info   .access(logPath, logStreamWrite);
+  debug  .access(logPath, logStreamWrite);
 
   info.append("Opened log.\n").out();
 }

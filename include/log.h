@@ -62,8 +62,8 @@ public:
     return false;
   }
 
-  int access(std::string &path) {
-    return _stream.access(path);
+  int access(const char *path, std::function<int(Stream &, const char *)> open) {
+    return open(_stream, path);
   }
 
   void seal() {

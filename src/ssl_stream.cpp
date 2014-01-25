@@ -36,11 +36,6 @@ int _SslStream::operator<<(std::vector<unsigned char>&buf) {
   return SSL_write(_ssl, buf.data(), buf.size());
 }
 
-int _SslStream::access(std::string& url) {
-  // Todo: implement access
-  return 0;
-}
-
 void _SslStream::seal() {
   // fd is stored in _ssl
   int _fd = fd();

@@ -127,7 +127,7 @@ int requestDownload::exec(Database &db) {
   std::string path = getDocPath(idUser, idPage);
 
   ioFile page(1024);
-  page.access(path);
+  page.access(path, fileStreamRead);
 
   print(*_socket, CHAR(_response::OK));
   int err = page.copy(*_socket);
@@ -199,7 +199,7 @@ int requestUpload::exec(Database &db) {
 
   std::string path = getDocPath(idUser, idPage);
   ioFile out(1024);
-  out.access(path);
+  out.access(path, fileStreamWrite);
 
   DEBUG_LOG("Copying file: ", path, " of size: ", size);
 
@@ -249,7 +249,7 @@ int requestUpload::exec(Database &db) {
   if(proc.pid >= 0) {
 
     std::string content;
-    out.access(path);
+    out.access(path, fileStreamRead);
 
     if(proc.fpipe.eachByte([&](unsigned char ch) {
       content.push_back(ch);

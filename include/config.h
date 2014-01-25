@@ -22,6 +22,7 @@ namespace config {
 
   struct _storage {
     std::string root;
+    std::string log;
   };
 
   extern _database database;

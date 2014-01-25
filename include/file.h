@@ -102,7 +102,9 @@ public:
 	unsigned char next() {
 		// Load new _cache if end of buffer is reached
   	if(end_of_buffer()) {
-    	load(cacheSize);
+    	if(load(cacheSize)) {
+        return '\0';
+      }
     }
 
     // If _cache.empty() return '\0'
@@ -187,14 +189,14 @@ public:
     return *this;
   }
 
-  int access(std::string &&path) {
-    return access(path);
-  }
-
-  int access(std::string& path) {
+  int access(const char *path, std::function<int(Stream &, const char *)> open) {
     seal();
 
-    return _stream.access(path);
+    return open(_stream, path);
+  }
+
+  int access(std::string& path, std::function<int(Stream &, const char *)> open) {
+    return access(path.c_str(), open);
   }
 
 	inline std::vector<unsigned char> &getCache() { return _cache; }

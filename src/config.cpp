@@ -13,7 +13,8 @@ namespace config {
   };
 
   _storage storage {
-    "."
+    ".",
+    "./out.log"
   };
 
   _server server {
@@ -66,7 +67,10 @@ namespace config {
   int readConfig(const char *path) {
     ioFile file(1024);
   
-    file.access(path);
+    
+    if(file.access(path, fileStreamRead)) {
+      return -1;
+    }
   
     std::string name;
   
@@ -167,6 +171,12 @@ namespace config {
       config::database.db = (*key_pair).second;
     }
   
+    name = "log";
+    key_pair = config_map.find(name);
+    if(key_pair != config_map.cend()) {
+      config::storage.log = (*key_pair).second;
+    }
+
     name = "root_document";
     key_pair = config_map.find(name);
     if(key_pair != config_map.cend()) {

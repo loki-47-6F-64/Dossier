@@ -5,6 +5,7 @@
 #include <string>
 
 #include <openssl/ssl.h>
+
 class _FileStream {
 	bool _eof;
 	int _fd;
@@ -21,11 +22,13 @@ public:
 	bool is_open();
 	bool eof();
 
-	int access(std::string &path);
 	void seal();
 
   int fd();
 };
+
+int fileStreamRead(_FileStream& fs, const char *file_path);
+int fileStreamWrite(_FileStream& fs, const char *file_path);
 
 class _SslStream {
   bool _eof;
@@ -43,7 +46,6 @@ public:
   bool is_open();
   bool eof();
 
-  int access(std::string &path);
   void seal();
 
   int fd();

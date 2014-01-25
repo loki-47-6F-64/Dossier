@@ -19,7 +19,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MYSQL_LIBS} -lcrypto -ls
 #################################################################
 #include compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 #################################################################
@@ -48,10 +48,6 @@ set(DOSSIER_INCLUDED
   file.h stream.h proxy.h server.h log.h config.h err.h
 )
 
-#message(${MYSQL_INCLUDE})
-#message(${INCLUDE_DIR})
-#message(${CMAKE_CXX_FLAGS})
-
 include_directories("${INCLUDE_DIR}")
 
 foreach(included ${DOSSIER_INCLUDED})
@@ -60,4 +56,12 @@ endforeach(included)
 
 ###################################################################
 
-add_executable(dossier.out ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
+add_executable(dossier ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
+
+
+###################################################################
+#Installation
+
+install(TARGETS dossier DESTINATION "/usr/bin")
+install(FILES dossier.service DESTINATION "/usr/lib/systemd/system")
+install(FILES dossier.conf    DESTINATION "/etc/dossier")
