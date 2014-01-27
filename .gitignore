@@ -32,3 +32,6 @@ Makefile
 
 #vim
 *.swp
+
+#executable output
+dossier
