@@ -30,6 +30,7 @@ void start_server() {
     std::string cn = getCN(client.ssl);
     int64_t idUser = db.validateUser(cn);
 
+    DEBUG_LOG("Accepted client: ", cn);
     if(db.err_msg) {
       print(*client.socket,
         CHAR(_response::INTERNAL_ERROR),

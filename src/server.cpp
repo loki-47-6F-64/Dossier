@@ -38,27 +38,21 @@ int Server::addListener(uint16_t port, int max_parallel, std::function<void(Clie
 
 	listen(pfd.fd, max_parallel);
 
-	/* lock */ {
-		std::lock_guard<std::mutex> lg(_add_listen);
-		_listenfd.push_back(pfd);
-    _action.push_back(f);
-	} // unlock
+  _listenfd.push_back(pfd);
+  _action.push_back(f);
 
 	return pfd.fd;
 }
 
 void Server::removeListener(int fd) {
-	/* lock */ {
-		std::lock_guard<std::mutex> lg(_add_listen);
-    for(int x = 0; x < _listenfd.size(); ++x) {
-      if(_listenfd[x].fd == fd) {
-        _listenfd.erase(_listenfd.begin() + x);
-        _action  .erase(_action  .begin() + x);
+  for(int x = 0; x < _listenfd.size(); ++x) {
+    if(_listenfd[x].fd == fd) {
+      _listenfd.erase(_listenfd.begin() + x);
+      _action  .erase(_action  .begin() + x);
 
-        break;
-      }
+      break;
     }
-  } // unlock
+  }
 
 	close(fd);
 }
@@ -83,7 +77,6 @@ void Server::_listen() {
 	int result;
 
 	while(_continue) {
-		std::unique_lock<std::mutex> ul(_add_listen);
     if((result = poll(_listenfd.data(), _listenfd.size(), config::server.poll_timeout)) > 0) 
 		{
 			for(int x = 0; x < _listenfd.size(); ++x) {
