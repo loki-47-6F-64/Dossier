@@ -7,19 +7,19 @@
 #define CHAR(x) static_cast<char>(x)
 std::unique_ptr<requestBase> getRequest(sslFile *socket) {
   std::unique_ptr<requestBase> _req;
-	switch (socket->next()) {
-		case _req_code::SEARCH:
-			_req = std::unique_ptr<requestSearch>(new requestSearch(socket));
-			break;
+  switch (socket->next()) {
+    case _req_code::SEARCH:
+      _req = std::unique_ptr<requestSearch>(new requestSearch(socket));
+      break;
     case _req_code::LIST_COMPANIES:
       _req = std::unique_ptr<requestListCompanies>(new requestListCompanies(socket));
       break;
-		case _req_code::DOWNLOAD:
-			_req = std::unique_ptr<requestDownload>(new requestDownload(socket));
-			break;
-		case _req_code::UPLOAD:
-			_req = std::unique_ptr<requestUpload>(new requestUpload(socket));
-			break;
+    case _req_code::DOWNLOAD:
+      _req = std::unique_ptr<requestDownload>(new requestDownload(socket));
+      break;
+    case _req_code::UPLOAD:
+      _req = std::unique_ptr<requestUpload>(new requestUpload(socket));
+      break;
     case _req_code::NEW_COMPANY:
       _req = std::unique_ptr<requestNewCompany>(new requestNewCompany(socket));
       break;
@@ -29,7 +29,7 @@ std::unique_ptr<requestBase> getRequest(sslFile *socket) {
     case _req_code::REMOVE_DOCUMENT:
       _req = std::unique_ptr<requestRemoveDocument>(new requestRemoveDocument(socket));
       break;
-	}
+  }
   return _req;
 }
 

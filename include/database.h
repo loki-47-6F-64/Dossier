@@ -15,30 +15,30 @@ struct meta_doc {
 };
 
 class Database {
-	SqlConnect _sql;
+  SqlConnect _sql;
 public:
-	const char *err_msg = nullptr;
+  const char *err_msg = nullptr;
 
-	Database();
-//	~Database();
+  Database();
+//  ~Database();
 
-	std::vector<meta_doc> search(int64_t idUser, std::string &company,
+  std::vector<meta_doc> search(int64_t idUser, std::string &company,
     int year, int month, int day,
     std::vector<std::string>& keywords);
 
-	meta_doc getFile(int64_t idUser, int64_t idPage);
+  meta_doc getFile(int64_t idUser, int64_t idPage);
 
   // Create new meta_doc and return the id.
- 	int64_t newDocument(int64_t idUser, std::string &company);
+  int64_t newDocument(int64_t idUser, std::string &company);
   int removeDocument(int64_t idPage, int64_t idUser);
 
   int setDocContent(int64_t idPage, std::string &content);
 
   // Return id user
-	int64_t validateUser(std::string& username);
+  int64_t validateUser(std::string& username);
 
-	int newUser(std::string &username,
-									std::string &email);
+  int newUser(std::string &username,
+                  std::string &email);
 
   int newCompany(std::string &name, int64_t idUser);
   int removeCompany(std::string &name, int64_t idUser);

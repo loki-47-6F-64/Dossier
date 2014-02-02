@@ -13,9 +13,9 @@ typedef unsigned char byte;
 
 #define CHAR(x) static_cast<char>(x)
 void start_server() {
-	Server s;
+  Server s;
 
-	if(s.addListener(config::server.port, 20, [&](Client &&client) {
+  if(s.addListener(config::server.port, 20, [&](Client &&client) {
     Database db;
 
     if(db.err_msg) {
@@ -52,10 +52,10 @@ void start_server() {
     req->exec(db);
   }
   ) < 0) {
-		print(error, "Can't set listener: ", sys_err());
+    print(error, "Can't set listener: ", sys_err());
 
     return;
-	}
+  }
 
   if(s.addListener(8081, 20, [&](Client &&client) {
     ioFile out(1024, -1, dup(STDOUT_FILENO));
@@ -66,7 +66,7 @@ void start_server() {
 
     return;
   }
-	s();
+  s();
 }
 
 int main(int args, char *argv[]) {

@@ -7,22 +7,22 @@
 #include <openssl/ssl.h>
 
 class _FileStream {
-	bool _eof;
-	int _fd;
+  bool _eof;
+  int _fd;
 
 public:
-	_FileStream();
+  _FileStream();
 
   void operator =(_FileStream&& stream);
-	void open(int fd);
+  void open(int fd);
 
-	int operator >>(std::vector<unsigned char>& buf);
-	int operator <<(std::vector<unsigned char>& buf);
+  int operator >>(std::vector<unsigned char>& buf);
+  int operator <<(std::vector<unsigned char>& buf);
 
-	bool is_open();
-	bool eof();
+  bool is_open();
+  bool eof();
 
-	void seal();
+  void seal();
 
   int fd();
 };

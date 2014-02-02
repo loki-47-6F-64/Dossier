@@ -22,9 +22,9 @@ template <class Stream, class... Args>
 class FD /* File descriptor */ {
   static constexpr int READ = 0, WRITE = 1;
 
-	Stream _stream;
+  Stream _stream;
 
-	std::vector<unsigned char> _cache;
+  std::vector<unsigned char> _cache;
   std::vector<unsigned char>::const_iterator _data_p;
 
   long _microsec;
@@ -51,65 +51,65 @@ public:
     cacheSize = other.cacheSize;
   }
 
-	FD(int cacheSize, long microsec = -1) 
+  FD(int cacheSize, long microsec = -1) 
       : cacheSize(cacheSize), _microsec(microsec) {}
 
-	FD(int cacheSize, long microsec, Args... params) 
+  FD(int cacheSize, long microsec, Args... params) 
       : cacheSize(cacheSize), _microsec(microsec)
   {
-		_stream.open(std::forward<Args>(params)...);
-	}
+    _stream.open(std::forward<Args>(params)...);
+  }
 
-	~FD() {
+  ~FD() {
     seal();
-	}
+  }
 
-	// Load file into _cache.data(), replaces old _cache.data()
+  // Load file into _cache.data(), replaces old _cache.data()
   /* Returns -1 on error.
      Returns  0 on succes
      Returns  1 on timeout */
-	int load(size_t max_bytes) {
-		_cache.resize(max_bytes);
+  int load(size_t max_bytes) {
+    _cache.resize(max_bytes);
 
     int err;
     if((err = _select(READ))) {
       return err;
     }
 
-  	if((_stream >> _cache) < 0)
-    	return FileErr::STREAM_ERR;
+    if((_stream >> _cache) < 0)
+      return FileErr::STREAM_ERR;
 
-  	_data_p = _cache.cbegin();
-  	return FileErr::OK;
-	}
+    _data_p = _cache.cbegin();
+    return FileErr::OK;
+  }
 
-	// Write to file
-	inline int out() {
+  // Write to file
+  inline int out() {
     int err;
     if((err = _select(WRITE))) {
       return err;
     }
 
     // On success clear
-		if((_stream << _cache) >= 0) {
+    if((_stream << _cache) >= 0) {
       clear();
       return FileErr::OK;
     }
     return FileErr::STREAM_ERR;
-	}
+  }
 
   // Usefull when fine controll is nessesary
-	unsigned char next() {
-		// Load new _cache if end of buffer is reached
-  	if(end_of_buffer()) {
-    	if(load(cacheSize)) {
+  unsigned char next() {
+    // Load new _cache if end of buffer is reached
+    if(end_of_buffer()) {
+      if(load(cacheSize)) {
         return '\0';
       }
     }
 
     // If _cache.empty() return '\0'
-  	return _cache.empty() ? '\0' : *_data_p++;
-	}
+    return _cache.empty() ? '\0' : *_data_p++;
+  }
 
   int eachByte(std::function<int(unsigned char)> f) {
     while(!eof()) {
@@ -130,12 +130,12 @@ public:
     return FileErr::OK;
   }
 
-	// Append buffer
-	inline FD& append(std::vector<unsigned char>& buffer) {
-		_cache.insert(_cache.end(), buffer.begin(), buffer.end());
+  // Append buffer
+  inline FD& append(std::vector<unsigned char>& buffer) {
+    _cache.insert(_cache.end(), buffer.begin(), buffer.end());
 
     return *this;
-	}
+  }
 
   inline FD& append(unsigned char ch) {
     _cache.push_back(ch);
@@ -199,12 +199,12 @@ public:
     return access(path.c_str(), open);
   }
 
-	inline std::vector<unsigned char> &getCache() { return _cache; }
-	inline bool eof() { return _stream.eof(); }
-	inline bool end_of_buffer() {return _data_p == _cache.cend();}
-	inline bool is_open() { return _stream.is_open(); }
+  inline std::vector<unsigned char> &getCache() { return _cache; }
+  inline bool eof() { return _stream.eof(); }
+  inline bool end_of_buffer() {return _data_p == _cache.cend();}
+  inline bool is_open() { return _stream.is_open(); }
 
-	inline void seal() {
+  inline void seal() {
     if(is_open())
       _stream.seal();
   }

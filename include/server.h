@@ -8,30 +8,30 @@
 #include "_ssl.h"
 #include "file.h"
 class Server {
-	// Should the server continue?
-	bool _continue;
+  // Should the server continue?
+  bool _continue;
 
-	std::vector<pollfd> _listenfd;
+  std::vector<pollfd> _listenfd;
   std::vector<std::function<void(Client&&)>> _action;
 
-	std::mutex _add_listen;
+  std::mutex _add_listen;
 public:
-	Server();
-	~Server();
+  Server();
+  ~Server();
 
   // Start server
-	void operator() ();
+  void operator() ();
 
-	// Returns -1 on failure
-	int addListener(uint16_t port, int max_parallel, std::function<void(Client&&)> f);
-	void removeListener(int fd);
+  // Returns -1 on failure
+  int addListener(uint16_t port, int max_parallel, std::function<void(Client&&)> f);
+  void removeListener(int fd);
 
-	void stop();
+  void stop();
 
-	inline bool isRunning();
+  inline bool isRunning();
 
 private:
-	void _listen();	
+  void _listen(); 
 
 
 private:

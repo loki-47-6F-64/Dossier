@@ -4,34 +4,34 @@
 #include "main.h"
 #include "database.h"
 Database::Database() {
-	if(!_sql.open(
-		config::database.host.c_str(),
-		config::database.user.c_str(),
-		config::database.password.c_str()))
-	{
-		err_msg = _sql.error();
-		return;
-	}
+  if(!_sql.open(
+    config::database.host.c_str(),
+    config::database.user.c_str(),
+    config::database.password.c_str()))
+  {
+    err_msg = _sql.error();
+    return;
+  }
 
-	_sql.setdb(config::database.db.c_str());
+  _sql.setdb(config::database.db.c_str());
 }
 
 
 int Database::newUser(std::string &username,
-                  		std::string &email)
+                      std::string &email)
 {
   _sql.sanitize(username); _sql.sanitize(email);
-	std::ostringstream query;
+  std::ostringstream query;
 
-	query << "INSERT INTO user (username, email, password) VALUES ('";
-	query << username.data(); query << "','";
-	query << email.data(); query << "',')";
+  query << "INSERT INTO user (username, email, password) VALUES ('";
+  query << username.data(); query << "','";
+  query << email.data(); query << "',')";
 
-	if(_sql.query(query.str())) {
-		err_msg = _sql.error();
-		return -1;
-	}
-	return 0;
+  if(_sql.query(query.str())) {
+    err_msg = _sql.error();
+    return -1;
+  }
+  return 0;
 }
 
 int Database::removeDocument(int64_t idPage, int64_t idUser) {
@@ -50,14 +50,14 @@ int Database::removeDocument(int64_t idPage, int64_t idUser) {
 int64_t Database::validateUser(std::string& username) {
   _sql.sanitize(username);
 
-	std::ostringstream query;
+  std::ostringstream query;
 
-	query << "SELECT 1 FROM user WHERE username='" << 
+  query << "SELECT 1 FROM user WHERE username='" << 
   username.data() << "' LIMIT 1";
   //query << "' AND password='";
-	//query << hash.data(); query << "' LIMIT 1)";
+  //query << hash.data(); query << "' LIMIT 1)";
 
-	if(_sql.query(query.str())) {
+  if(_sql.query(query.str())) {
     err_msg = _sql.error();
     return -1;
   }
@@ -65,11 +65,11 @@ int64_t Database::validateUser(std::string& username) {
   bool rejected = true;
 
   int64_t id = 0;
-	_sql.eachRow([&](MYSQL_ROW row, unsigned long*) {
+  _sql.eachRow([&](MYSQL_ROW row, unsigned long*) {
     rejected = false;
 
     id = std::strtol(*row, nullptr, 10);
-	});
+  });
 
   if(rejected)
     err_msg = "Authentication failed";

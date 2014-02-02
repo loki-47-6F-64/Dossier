@@ -40,7 +40,7 @@ namespace _response {
 };
 class requestBase {
 protected:
-	sslFile *_socket;
+  sslFile *_socket;
 public:
   requestBase(sslFile *socket) : _socket(socket){}
 
@@ -123,19 +123,19 @@ public:
     return load(std::forward<Args>(params)...);
   }
 
-	// Excecute request
-	virtual int exec(Database& db) = 0;
+  // Excecute request
+  virtual int exec(Database& db) = 0;
 };
 
 class requestUpload : public requestBase {
 public:
   requestUpload(sslFile *socket) : requestBase(socket){}
 
-	std::string company;
+  std::string company;
 
   int64_t size;
 
-	int exec(Database& db);
+  int exec(Database& db);
 };
 
 class requestDownload : public requestBase {
@@ -144,18 +144,18 @@ public:
 
   int64_t idPage;
 
-	int exec(Database& db);
+  int exec(Database& db);
 };
 
 class requestSearch : public requestBase {
 public:
   requestSearch(sslFile *socket) : requestBase(socket){}
-	std::string company;
+  std::string company;
   int year, month, day;
 
-	std::vector<std::string> keywords;
+  std::vector<std::string> keywords;
 
-	int exec(Database& db);
+  int exec(Database& db);
 };
 
 class requestNewCompany : public requestBase {

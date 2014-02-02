@@ -6,42 +6,42 @@
 
 Context Server::_ssl_ctx;
 void Server::operator() () {
-	if(isRunning())
-		return;
+  if(isRunning())
+    return;
 
-	_continue = true;
-	_listen();
+  _continue = true;
+  _listen();
 }
 
 int Server::addListener(uint16_t port, int max_parallel, std::function<void(Client&&)> f) {
-	sockaddr_in server {
-		config::server.inet,
-		htons(port),
-		{ INADDR_ANY }
-	};
+  sockaddr_in server {
+    config::server.inet,
+    htons(port),
+    { INADDR_ANY }
+  };
 
-	pollfd pfd { 
-		socket(config::server.inet, SOCK_STREAM, 0),
-		POLLIN,
-		0 
-	};
+  pollfd pfd { 
+    socket(config::server.inet, SOCK_STREAM, 0),
+    POLLIN,
+    0 
+  };
 
-	if(pfd.fd == -1)
-		return -1;
+  if(pfd.fd == -1)
+    return -1;
 
-	// Allow reuse of local addresses
+  // Allow reuse of local addresses
   setsockopt(pfd.fd, SOL_SOCKET, SO_REUSEADDR, &pfd.fd, sizeof(pfd.fd));
 
-	if(bind(pfd.fd, (sockaddr*)&server, sizeof(sockaddr_in)) < 0) {
-		return -1;
+  if(bind(pfd.fd, (sockaddr*)&server, sizeof(sockaddr_in)) < 0) {
+    return -1;
   }
 
-	listen(pfd.fd, max_parallel);
+  listen(pfd.fd, max_parallel);
 
   _listenfd.push_back(pfd);
   _action.push_back(f);
 
-	return pfd.fd;
+  return pfd.fd;
 }
 
 void Server::removeListener(int fd) {
@@ -54,37 +54,37 @@ void Server::removeListener(int fd) {
     }
   }
 
-	close(fd);
+  close(fd);
 }
 
 void Server::stop() {
-	_continue = false;
-}	
+  _continue = false;
+} 
 
 Server::Server() : _continue(false) {}
 Server::~Server() { 
-	stop();
+  stop();
 }
 
 inline bool Server::isRunning() {
-	return _continue;
+  return _continue;
 }
 
 void Server::_listen() {
-	sockaddr_in client;
-	int addr_size { sizeof(sockaddr_in) };
+  sockaddr_in client;
+  int addr_size { sizeof(sockaddr_in) };
 
-	int result;
+  int result;
 
-	while(_continue) {
+  while(_continue) {
     if((result = poll(_listenfd.data(), _listenfd.size(), config::server.poll_timeout)) > 0) 
-		{
-			for(int x = 0; x < _listenfd.size(); ++x) {
+    {
+      for(int x = 0; x < _listenfd.size(); ++x) {
         auto& poll = _listenfd[x];
 
-				if(poll.revents == POLLIN) {
-					DEBUG_LOG("Accepting client");
-	
+        if(poll.revents == POLLIN) {
+          DEBUG_LOG("Accepting client");
+  
           Client client = ssl_accept(Server::_ssl_ctx.get(), poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size);
           if(client.socket.get() == nullptr) {
             continue;
@@ -92,9 +92,9 @@ void Server::_listen() {
 
           std::thread t(_action[x], std::move(client));
           t.detach();
-				}
-			}
-			
+        }
+      }
+      
     }
     else if(result == -1) {
       print(error, "Cannot poll socket: ", sys_err());
@@ -103,8 +103,8 @@ void Server::_listen() {
     }
   }
 
-	// Cleanup
-	for(auto& poll : _listenfd) {
-		close(poll.fd);
-	}
+  // Cleanup
+  for(auto& poll : _listenfd) {
+    close(poll.fd);
+  }
 }

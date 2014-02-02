@@ -22,7 +22,7 @@ int fileStreamWrite(_FileStream& fs, const char *file_path) {
 
 _FileStream::_FileStream() : _fd(-1), _eof(false) {}
 void _FileStream::open(int fd) {
-	_fd = fd;
+  _fd = fd;
 }
 
 void _FileStream::operator=(_FileStream&& stream) {
@@ -34,27 +34,27 @@ void _FileStream::operator=(_FileStream&& stream) {
 }
 
 int _FileStream::operator>>(std::vector<unsigned char>& buf) {
-	ssize_t bytes_read;
+  ssize_t bytes_read;
 
-	if((bytes_read = read(_fd, buf.data(), buf.size())) < 0) {
+  if((bytes_read = read(_fd, buf.data(), buf.size())) < 0) {
     return -1;
   }
   else if(!bytes_read) {
     _eof = true;
   }
 
-	// Update number of bytes in buf
+  // Update number of bytes in buf
   buf.resize(bytes_read);
-	return 0;
+  return 0;
 }
 
 int _FileStream::operator<<(std::vector<unsigned char>&buf) {
-	return write(_fd, buf.data(), buf.size());
+  return write(_fd, buf.data(), buf.size());
 }
 
 void _FileStream::seal() {
-	close(_fd);
-	_fd = -1;
+  close(_fd);
+  _fd = -1;
 }
 
 int _FileStream::fd() { return _fd;};
