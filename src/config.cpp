@@ -112,76 +112,47 @@ namespace config {
     return result;
   }
   
+  void setConfig(std::string &&configName, std::string &dest) {
+    auto key_pair = config_map.find(configName);
+    if(key_pair != config_map.cend()) {
+      dest = std::move((*key_pair).second);
+    }
+  }
+
+  void setConfig(std::string &&configName, uint16_t &dest) {
+    auto key_pair = config_map.find(configName);
+    if(key_pair != config_map.cend()) {
+      dest = std::stoi((*key_pair).second);
+    }
+  }
+
+  void setConfig(std::string &&configName, sa_family_t &dest) {
+    auto key_pair = config_map.find(configName);
+    if(key_pair != config_map.cend()) {
+      if((*key_pair).second.back() == '4') {
+        dest = AF_INET;
+      }
+      else {
+        dest = AF_INET6;
+      }
+    }
+  }
+
   int file(const char *path) {
     if(readConfig(path)) {
       return -1;
     }
 
-    std::string name = "certificate_path";
-    auto key_pair = config_map.find(name);
-  
-    if(key_pair != config_map.cend()) {
-      config::server.certPath = (*key_pair).second;
-    }
-  
-    name = "key_path";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      config::server.keyPath = (*key_pair).second;
-    }
-  
-    name = "ip_family";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      if((*key_pair).second.back() == '4') {
-        config::server.inet = AF_INET;
-      }
-      else {
-        config::server.inet = AF_INET6;
-      }
-    }
-  
-    name = "port";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      config::server.port = std::stoi((*key_pair).second);
-    }
-
-    name = "host";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      config::database.host = (*key_pair).second;
-    }
-  
-    name = "user";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      config::database.user = (*key_pair).second;
-    }
-  
-    name = "password";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      config::database.password = (*key_pair).second;
-    }
-  
-    name = "db";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      config::database.db = (*key_pair).second;
-    }
-  
-    name = "log";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      config::storage.log = (*key_pair).second;
-    }
-
-    name = "root_document";
-    key_pair = config_map.find(name);
-    if(key_pair != config_map.cend()) {
-      config::storage.root = (*key_pair).second;
-    }
+    setConfig("certificate_path", config::server.certPath);
+    setConfig("key_path", config::server.keyPath);
+    setConfig("ip_family", config::server.inet);
+    setConfig("port", config::server.port);
+    setConfig("host", config::database.host);
+    setConfig("password", config::database.password);
+    setConfig("db", config::database.db);
+    setConfig("user", config::database.user);
+    setConfig("log", config::storage.log);
+    setConfig("root_document", config::storage.root);
   
     return 0;
   }
