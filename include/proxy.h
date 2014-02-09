@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "file.h"
+#include "server.h"
+
 // Limited by database schema
 constexpr int MAX_NAME     = 45;
 constexpr int MAX_CATEGORY = 45;
@@ -127,6 +129,7 @@ public:
   virtual int exec(Database& db) = 0;
 };
 
+void start_server(Server &s, uint16_t port);
 class requestUpload : public requestBase {
 public:
   requestUpload(sslFile *socket) : requestBase(socket){}

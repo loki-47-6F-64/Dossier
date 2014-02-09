@@ -4,7 +4,9 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
+#include <netdb.h>
 
+#include "err.h"
 #include "_ssl.h"
 
 std::unique_ptr<std::mutex[]> lock;
@@ -16,7 +18,7 @@ void crypto_lock(int mode, int n, const char *file, int line) {
   }
 }
 
-int loadCertificates(Context& ctx, const char *certPath, const char *keyPath) {
+int loadCertificates(Context& ctx, const char *caPath, const char *certPath, const char *keyPath) {
   if(SSL_CTX_use_certificate_file(ctx.get(), certPath, SSL_FILETYPE_PEM) != 1) {
     return -1;
   }
@@ -29,7 +31,7 @@ int loadCertificates(Context& ctx, const char *certPath, const char *keyPath) {
     return -1;
   }
 
-  if(SSL_CTX_load_verify_locations(ctx.get(), certPath, NULL) != 1) {
+  if(SSL_CTX_load_verify_locations(ctx.get(), caPath, NULL) != 1) {
     return -1;
   }
 
@@ -61,21 +63,76 @@ std::string getCN(const SSL *ssl) {
   return cn;
 }
 
-Context init_ssl(std::string& certPath, std::string& keyPath) {
+Context init_ctx_server(std::string &caPath, std::string& certPath, std::string& keyPath) {
+  Context ctx(SSL_CTX_new(SSLv3_server_method()));
+
+  if(loadCertificates(ctx, caPath.c_str(), certPath.c_str(), keyPath.c_str())) {
+    ctx.release();
+  }
+
+  return ctx;
+}
+
+Context init_ctx_client(std::string &caPath, std::string& certPath, std::string& keyPath) {
+  Context ctx(SSL_CTX_new(SSLv3_client_method()));
+
+  if(loadCertificates(ctx, caPath.c_str(), certPath.c_str(), keyPath.c_str())) {
+    ctx.release();
+  }
+
+  return ctx;
+}
+
+void init_ssl() {
   SSL_library_init();
   OpenSSL_add_all_algorithms();
   SSL_load_error_strings();
 
   lock = std::unique_ptr<std::mutex[]>(new std::mutex[CRYPTO_num_locks()]);
   CRYPTO_set_locking_callback(crypto_lock);
+}
+sslFile ssl_connect(Context &ctx, const char *hostname, const char* port) {
+  constexpr long buffer_size = 1024, timeout = -1;
 
-  Context ctx(SSL_CTX_new(SSLv3_server_method()));
+  sslFile sslFd(buffer_size);
+  int serverFd = socket(AF_INET, SOCK_STREAM, 0);
 
-  if(loadCertificates(ctx, certPath.c_str(), keyPath.c_str())) {
-    ctx.release();
+  addrinfo hints;
+  addrinfo *server;
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+
+  int err;
+  if((err = getaddrinfo(hostname, port, &hints, &server))) {
+    set_err(gai_strerror(err));
+    return sslFd;
   }
 
-  return ctx;
+
+  if(connect(serverFd, server->ai_addr, server->ai_addrlen)) {
+    set_err(sys_err());
+    return sslFd;
+  }
+
+  SSL *ssl = SSL_new(ctx.get());
+
+  if(ssl == nullptr) {
+    set_err((std::string("SSL struct is NULL: ") + ssl_err()).c_str());
+  }
+
+  sslFile ssl_tmp(buffer_size, timeout, ssl);
+  SSL_set_fd(ssl, serverFd);
+
+  if(SSL_connect(ssl) != 1) {
+    ssl_err();
+    return sslFd;
+  }
+
+  sslFd = std::move(ssl_tmp);
+
+  return sslFd;
 }
 
 Client ssl_accept(SSL_CTX *ctx, int fd, sockaddr *client_addr, uint32_t* addr_size) {

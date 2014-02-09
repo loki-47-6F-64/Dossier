@@ -14,7 +14,7 @@ execute_process(COMMAND mysql_config --libs OUTPUT_VARIABLE MYSQL_LIBS)
 #remove \n to prevent crash
 STRING(REPLACE "\n" "" MYSQL_LIBS ${MYSQL_LIBS})
 
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MYSQL_LIBS} -lcrypto -lssl -lpthread -ldl")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MYSQL_LIBS} -lcrypto -lssl -lpthread -ldl -lgtest")
 
 #################################################################
 #include compiler flags
@@ -26,7 +26,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 #include source
 
 set(DOSSIER_SOURCE_FILES
-  main.cpp proc.cpp server.cpp err.cpp _ssl.cpp config.cpp proxy.cpp
+  proc.cpp server.cpp err.cpp _ssl.cpp config.cpp proxy.cpp
   ssl_stream.cpp file_stream.cpp log.cpp
   sql_connect.cpp database.cpp
 )
@@ -44,8 +44,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MYSQL_INCLUDE}")
 
 set(INCLUDE_DIR ../include/)
 set(DOSSIER_INCLUDED
-  sql_connect.h proc.h main.h _ssl.h database.h 
-  file.h stream.h proxy.h server.h log.h config.h err.h
+  sql_connect.h proc.h main.h _ssl.h database.h move_emulate.h 
+  file.h stream.h proxy.h server.h log.h config.h err.h thread_pool.h
 )
 
 include_directories("${INCLUDE_DIR}")
@@ -56,8 +56,12 @@ endforeach(included)
 
 ###################################################################
 
-add_executable(dossier ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
+add_library(dossier_lib ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
+add_executable(dossier main.cpp ${DOSSIER_HEADER_FILES})
+add_executable(test.out test/test.cpp ${DOSSIER_HEADER_FILES})
 
+target_link_libraries(dossier dossier_lib)
+target_link_libraries(test.out dossier_lib)
 
 ###################################################################
 #Installation

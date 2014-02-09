@@ -59,9 +59,10 @@ void Server::removeListener(int fd) {
 
 void Server::stop() {
   _continue = false;
+  std::lock_guard<std::mutex> lg(_server_stop_lock);
 } 
 
-Server::Server() : _continue(false) {}
+Server::Server() : _continue(false), _task(5) {}
 Server::~Server() { 
   stop();
 }
@@ -76,6 +77,7 @@ void Server::_listen() {
 
   int result;
 
+  std::lock_guard<std::mutex> lg(_server_stop_lock);
   while(_continue) {
     if((result = poll(_listenfd.data(), _listenfd.size(), config::server.poll_timeout)) > 0) 
     {
@@ -90,8 +92,10 @@ void Server::_listen() {
             continue;
           }
 
-          std::thread t(_action[x], std::move(client));
-          t.detach();
+          MoveByCopy<Client> me(std::move(client));
+          _task.push(
+            decltype(_task)::task_type(std::bind(_action[x], me))
+          );
         }
       }
       

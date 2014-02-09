@@ -11,6 +11,14 @@ const char *sys_err() {
   return strerror_r(errno, err_buf, MAX_ERROR_BUFFER);
 }
 
+void set_err(const char *src) {
+  int x;
+  for(x = 0; src[x] && x < MAX_ERROR_BUFFER -1; ++x) {
+    err_buf[x] = src[x];
+  }
+  err_buf[x] = '\0';
+}
+
 const char *ssl_err() {
   int err = ERR_get_error();
   if(err) {
@@ -19,4 +27,8 @@ const char *ssl_err() {
   }
 
   return nullptr;
+}
+
+const char *get_current_err() {
+  return err_buf;
 }

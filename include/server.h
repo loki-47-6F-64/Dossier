@@ -6,6 +6,8 @@
 #include <mutex>
 
 #include "_ssl.h"
+#include "thread_pool.h"
+#include "move_by_copy.h"
 #include "file.h"
 class Server {
   // Should the server continue?
@@ -14,7 +16,9 @@ class Server {
   std::vector<pollfd> _listenfd;
   std::vector<std::function<void(Client&&)>> _action;
 
-  std::mutex _add_listen;
+
+  ThreadPool<void> _task;
+  std::mutex _server_stop_lock;
 public:
   Server();
   ~Server();
@@ -39,7 +43,8 @@ private:
 public:
   // Needs to be called before starting server
   static int init(std::string& certPath, std::string& keyPath) {
-    _ssl_ctx = init_ssl(certPath, keyPath);
+    init_ssl();
+    _ssl_ctx = init_ctx_server(certPath, certPath, keyPath);
     return _ssl_ctx.get() == nullptr;
   }
 };

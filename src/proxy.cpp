@@ -1,7 +1,6 @@
 #include "main.h"
 #include "proxy.h"
 #include "proc.h"
-#include "file.h"
 #include "database.h"
 
 #define CHAR(x) static_cast<char>(x)
@@ -406,4 +405,48 @@ int requestRemoveDocument::exec(Database &db) {
 
   print(*_socket, CHAR(_response::OK));
   return 0;
+}
+
+void start_server(Server &s, uint16_t port) {
+  if(s.addListener(port, 20, [&](Client &&client) {
+    Database db;
+
+    if(db.err_msg) {
+      print(*client.socket,
+        CHAR(_response::INTERNAL_ERROR),
+        "Could not connect to database.");
+      print(error, db.err_msg);
+      return;
+    }
+
+    std::string cn = getCN(client.ssl);
+    int64_t idUser = db.validateUser(cn);
+
+    DEBUG_LOG("Accepted client: ", cn);
+    if(db.err_msg) {
+      print(*client.socket,
+        CHAR(_response::INTERNAL_ERROR),
+        "User ", cn, " not found.");
+
+      print(error, "User ", cn, " not found.");
+      return;
+    }
+
+    std::unique_ptr<requestBase> req = getRequest(client.socket.get());
+
+    std::unique_ptr<int> s;
+    if(req.get() == nullptr) {
+      print(warning, "Unknown request.");
+      return;
+    }
+
+    req->idUser = idUser;
+    req->exec(db);
+  }
+  ) < 0) {
+    print(error, "Can't set listener: ", sys_err());
+
+    return;
+  }
+  s();
 }

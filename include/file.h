@@ -137,46 +137,47 @@ public:
     return *this;
   }
 
-  inline FD& append(unsigned char ch) {
+  inline FD& append(const unsigned char ch) {
     _cache.push_back(ch);
 
     return *this;
   }
 
-  inline FD& append(char ch) {
+  inline FD& append(const char ch) {
     return append(static_cast<unsigned char>(ch));
   }
 
-  inline FD& append(long long integer) {
+  inline FD& append(const long long integer) {
     return append(std::to_string(integer));
   }
 
-  inline FD& append(unsigned long long integer) {
+  inline FD& append(const unsigned long long integer) {
     return append(std::to_string(integer));
   }
 
-  inline FD& append(long integer) {
+  inline FD& append(const long integer) {
     return append(std::to_string(integer));
   }
 
-  inline FD& append(unsigned long integer) {
+  inline FD& append(const unsigned long integer) {
     return append(std::to_string(integer));
   }
 
-  inline FD& append(int integer) {
+  inline FD& append(const int integer) {
     return append(std::to_string(integer));
   }
 
-  inline FD& append(unsigned int integer) {
+  inline FD& append(const unsigned int integer) {
     return append(std::to_string(integer));
   }
 
-  inline FD& append(std::string &buffer) {
+  inline FD& append(std::string const &buffer) {
     _cache.insert(_cache.end(), buffer.begin(), buffer.end());
 
     return *this;
   }
 
+  // const char *
   inline FD& append(std::string &&buffer) {
     return append(buffer);
   }

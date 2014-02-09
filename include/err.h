@@ -7,6 +7,9 @@
 const char *sys_err();
 const char *ssl_err();
 
+void set_err(const char *err);
+const char *get_current_err();
+
 template<class File>
 void ssl_print_err(File &out) {
   const char *err;
