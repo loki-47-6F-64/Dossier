@@ -126,7 +126,7 @@ namespace config {
     }
   }
 
-  void setConfig(std::string &&configName, sa_family_t &dest) {
+  void setConfig(std::string &&configName, sa_family_t &dest, bool is_inet_family) {
     auto key_pair = config_map.find(configName);
     if(key_pair != config_map.cend()) {
       if((*key_pair).second.back() == '4') {
@@ -145,7 +145,7 @@ namespace config {
 
     setConfig("certificate_path", config::server.certPath);
     setConfig("key_path", config::server.keyPath);
-    setConfig("ip_family", config::server.inet);
+    setConfig("ip_family", config::server.inet, true);
     setConfig("port", config::server.port);
     setConfig("host", config::database.host);
     setConfig("password", config::database.password);

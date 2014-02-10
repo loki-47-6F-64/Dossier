@@ -44,7 +44,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MYSQL_INCLUDE}")
 
 set(INCLUDE_DIR ../include/)
 set(DOSSIER_INCLUDED
-  sql_connect.h proc.h main.h _ssl.h database.h move_emulate.h 
+  sql_connect.h proc.h main.h _ssl.h database.h move_by_copy.h 
   file.h stream.h proxy.h server.h log.h config.h err.h thread_pool.h
 )
 
@@ -62,6 +62,12 @@ add_executable(test.out test/test.cpp ${DOSSIER_HEADER_FILES})
 
 target_link_libraries(dossier dossier_lib)
 target_link_libraries(test.out dossier_lib)
+
+###################################################################
+#Testing
+enable_testing()
+add_test(Mytest test)
+
 
 ###################################################################
 #Installation
