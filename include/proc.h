@@ -5,8 +5,7 @@
 #include <thread>
 #include <future>
 
-#include "file.h"
-#include "main.h"
+#include "file/file.h"
 
 enum class pipeType {
   READ,

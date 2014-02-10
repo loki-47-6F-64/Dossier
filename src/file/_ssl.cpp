@@ -7,7 +7,7 @@
 #include <netdb.h>
 
 #include "err.h"
-#include "_ssl.h"
+#include "file/_ssl.h"
 
 std::unique_ptr<std::mutex[]> lock;
 void crypto_lock(int mode, int n, const char *file, int line) {

@@ -1,7 +1,7 @@
-#include "main.h"
-#include "proxy.h"
+#include "server/main.h"
+#include "server/proxy.h"
 #include "proc.h"
-#include "database.h"
+#include "database/database.h"
 
 #define CHAR(x) static_cast<char>(x)
 std::unique_ptr<requestBase> getRequest(sslFile *socket) {

@@ -1,4 +1,4 @@
-#include "log.h"
+#include "file/log.h"
 
 LogFile error  (1024, -1, " Error: "  , -1);
 LogFile warning(1024, -1, " Warning: ", -1);

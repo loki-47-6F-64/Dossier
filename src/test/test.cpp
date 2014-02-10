@@ -3,9 +3,9 @@
 #include <thread>
 #include <future>
 
-#include "server.h"
-#include "proxy.h"
-#include "main.h"
+#include "server/server.h"
+#include "server/proxy.h"
+#include "server/main.h"
 #include "err.h"
 
 TEST(server, TestServer) {

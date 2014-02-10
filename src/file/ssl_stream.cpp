@@ -1,6 +1,6 @@
 #include <unistd.h>
 
-#include "stream.h"
+#include "file/stream.h"
 
 _SslStream::_SslStream() : _eof(false), _ssl(nullptr) {}
 

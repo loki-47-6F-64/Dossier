@@ -1,5 +1,5 @@
 #include <memory>
-#include "sql_connect.h"
+#include "database/sql_connect.h"
 
 SqlConnect::SqlConnect() : _res(nullptr) {
   mysql_init(&_con);

@@ -1,5 +1,5 @@
-#include "main.h"
-#include "server.h"
+#include "server/main.h"
+#include "server/server.h"
 
 #include <unistd.h>
 #include <thread>

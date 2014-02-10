@@ -1,8 +1,8 @@
 #include <string>
 #include <sstream>
 
-#include "main.h"
-#include "database.h"
+#include "server/main.h"
+#include "database/database.h"
 Database::Database() {
   if(!_sql.open(
     config::database.host.c_str(),

@@ -1,7 +1,7 @@
-#include "main.h"
+#include "server/main.h"
 
-#include "file.h"
-#include "proxy.h"
+#include "file/file.h"
+#include "server/proxy.h"
 
 #include <unistd.h>
 

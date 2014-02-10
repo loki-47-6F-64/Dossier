@@ -11,8 +11,8 @@
   #define DEBUG_LOG( x ) do {} while(0)
 #endif
 
-#include "log.h"
-#include "config.h"
+#include "file/log.h"
+#include "server/config.h"
 #include "err.h"
 
 #endif

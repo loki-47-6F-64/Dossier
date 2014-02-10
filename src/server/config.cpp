@@ -1,6 +1,6 @@
 #include <unordered_map>
-#include "config.h"
-#include "file.h"
+#include "server/config.h"
+#include "file/file.h"
 
 #define ROOT_SERVER "/home/loki/keys/server/"
 namespace config {

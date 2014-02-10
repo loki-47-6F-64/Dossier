@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "file.h"
+#include "file/file.h"
 #include "server.h"
 
 // Limited by database schema
