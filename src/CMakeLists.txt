@@ -107,7 +107,7 @@ target_link_libraries(test.out dossier_lib)
 ###################################################################
 #Testing
 enable_testing()
-add_test(Mytest test)
+add_test(Server test.out)
 
 
 ###################################################################
