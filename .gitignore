@@ -36,6 +36,7 @@ Makefile
 
 #executable output
 dossier
+dossier_client
 
 #eclim settings
 .cproject

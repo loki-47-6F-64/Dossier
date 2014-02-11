@@ -32,3 +32,14 @@ const char *ssl_err() {
 const char *get_current_err() {
   return err_buf;
 }
+
+const char *server_err(sslFile& server) {
+  char *pos = err_buf;
+  server.eachByte([&](unsigned char ch) {
+    *pos++ = ch;
+    return (pos - err_buf < MAX_ERROR_BUFFER - 1) ? 0 : 1;
+  });
+  *pos = '\0';
+
+  return err_buf;
+}

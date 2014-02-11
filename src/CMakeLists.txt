@@ -65,6 +65,7 @@ set(DB_HEADER_FILES database.h sql_connect.h)
 set(DB_HEADER_DIR database/)
 set(SERVER_HEADER_FILES config.h main.h proxy.h server.h)
 set(SERVER_HEADER_DIR server/)
+set(CLIENT_HEADER_FILES args.h main.h)
 set(FILE_HEADER_FILES file.h log.h _ssl.h stream.h)
 set(FILE_HEADER_DIR file/)
 
@@ -72,10 +73,13 @@ foreach(header ${DB_HEADER_FILES})
   set(DB_HEADER ${DB_HEADER} "${DB_HEADER_DIR}${header}")
 endforeach(header)
 
+foreach(header ${CLIENT_HEADER_FILES})
+  set(CLIENT_HEADER ${CLIENT_HEADER} "${CLIENT_HEADER_DIR}${header}")
+endforeach(header)
+
 foreach(header ${FILE_HEADER_FILES})
   set(FILE_HEADER ${FILE_HEADER} "${FILE_HEADER_DIR}${header}")
 endforeach(header)
-
 
 foreach(header ${SERVER_HEADER_FILES})
   set(SERVER_HEADER ${SERVER_HEADER} "${SERVER_HEADER_DIR}${header}")
@@ -99,9 +103,11 @@ endforeach(included)
 
 add_library(dossier_lib ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
 add_executable(dossier server/main.cpp ${DOSSIER_HEADER_FILES})
+add_executable(dossier_client client/main.cpp ${DOSSIER_HEADER_FILES})
 add_executable(test.out test/test.cpp ${DOSSIER_HEADER_FILES})
 
 target_link_libraries(dossier dossier_lib)
+target_link_libraries(dossier_client dossier_lib)
 target_link_libraries(test.out dossier_lib)
 
 ###################################################################
