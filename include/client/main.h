@@ -5,4 +5,6 @@
 extern ioFile fout;
 extern ioFile fin;
 extern ioFile ferr;
+
+void print_help(const char *);
 #endif
