@@ -2,6 +2,8 @@
 
 #include "err.h"
 
+namespace dossier {
+namespace client {
 constexpr char
   DASH = '-',
 
@@ -132,3 +134,5 @@ int perform_search(Context &ctx, s_args &args) {
   return fout.out();*/
   return server.copy(fout);
 }
+};
+};

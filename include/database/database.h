@@ -7,6 +7,8 @@
 
 #include "sql_connect.h"
 
+namespace dossier {
+
 struct meta_doc {
   int64_t id;
   std::string company;
@@ -46,4 +48,5 @@ public:
   std::vector<std::string> listCompany(int64_t idUser);
 };
 
+};
 #endif

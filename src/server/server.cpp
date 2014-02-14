@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <thread>
 
+namespace dossier {
+namespace server {
 Context Server::_ssl_ctx;
 void Server::operator() () {
   if(isRunning())
@@ -112,3 +114,5 @@ void Server::_listen() {
     close(poll.fd);
   }
 }
+};
+};

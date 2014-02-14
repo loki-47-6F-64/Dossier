@@ -3,6 +3,8 @@
 
 #include "server/main.h"
 #include "database/database.h"
+
+namespace dossier {
 Database::Database() {
   if(!_sql.open(
     config::database.host.c_str(),
@@ -234,3 +236,4 @@ int Database::setDocContent(int64_t idPage, std::string &content) {
 
   return 0;
 }
+};

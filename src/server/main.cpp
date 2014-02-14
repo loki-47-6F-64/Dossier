@@ -5,7 +5,10 @@
 
 #include <unistd.h>
 
-int main(int args, char *argv[]) {
+
+namespace dossier {
+namespace server {
+int start(int args, char *argv[]) {
   const char *conf_path = "./dossier.conf";
   if(args > 1) {
     conf_path = argv[1];
@@ -31,4 +34,10 @@ int main(int args, char *argv[]) {
   Server server;
   start_server(server, config::server.port);
   return 0;
+}
+};
+};
+
+int main(int args, char *argv[]) {
+  return dossier::server::start(args, argv);
 }

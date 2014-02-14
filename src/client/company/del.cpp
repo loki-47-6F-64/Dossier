@@ -4,6 +4,9 @@
 #include "client/args.h"
 #include "err.h"
 
+namespace dossier {
+namespace client {
+
 int setArgs(mod_company_args &args, int argc, char *argv[]);
 
 int del_company(Context &ctx, int argc, char *argv[]) {
@@ -37,3 +40,5 @@ int perform_del_company(Context &ctx, mod_company_args &args) {
   }
   return 0;
 }
+};
+};

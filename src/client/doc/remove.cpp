@@ -5,6 +5,8 @@
 
 #include "err.h"
 
+namespace dossier {
+namespace client {
 int setArgs(del_args &args, int argc, char *argv[]) {
   if(argc != 3) {
     return -1;
@@ -48,3 +50,6 @@ int perform_remove(Context &ctx, del_args &args) {
   }
   return 0;
 }
+
+};
+};

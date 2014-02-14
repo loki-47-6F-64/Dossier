@@ -4,6 +4,9 @@
 #include "database/database.h"
 
 #define CHAR(x) static_cast<char>(x)
+
+namespace dossier {
+namespace server {
 std::unique_ptr<requestBase> getRequest(sslFile *socket) {
   std::unique_ptr<requestBase> _req;
   switch (socket->next()) {
@@ -450,3 +453,5 @@ void start_server(Server &s, uint16_t port) {
   }
   s();
 }
+};
+};

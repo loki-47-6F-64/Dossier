@@ -9,6 +9,10 @@
 #include "file/file.h"
 #include "server.h"
 
+namespace dossier {
+class Database;
+
+namespace server {
 // Limited by database schema
 constexpr int MAX_NAME     = 45;
 constexpr int MAX_CATEGORY = 45;
@@ -18,8 +22,6 @@ constexpr int MAX_USERNAME = 16;
 // Don't want to read client indefinetely
 constexpr int MAX_KEYWORD    = 55;
 constexpr int MAX_PARAMETERS = 10;
-
-class Database;
 
 namespace _req_code {
   enum : char {
@@ -189,4 +191,6 @@ public:
   int exec(Database &db);
 };
 std::unique_ptr<requestBase> getRequest(sslFile *socket);
+};
+};
 #endif

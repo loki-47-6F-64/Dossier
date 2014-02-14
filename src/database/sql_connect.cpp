@@ -1,6 +1,7 @@
 #include <memory>
 #include "database/sql_connect.h"
 
+namespace dossier {
 SqlConnect::SqlConnect() : _res(nullptr) {
   mysql_init(&_con);
 }
@@ -62,3 +63,4 @@ void SqlConnect::sanitize(std::string &input) {
   input = buf.get();
 }
 
+};

@@ -9,6 +9,9 @@
 #include "thread_pool.h"
 #include "move_by_copy.h"
 #include "file/file.h"
+
+namespace dossier {
+namespace server {
 class Server {
   // Should the server continue?
   bool _continue;
@@ -49,4 +52,6 @@ public:
   }
 };
 
+};
+};
 #endif

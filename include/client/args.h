@@ -4,6 +4,8 @@
 #include "main.h"
 #include "file/_ssl.h"
 
+namespace dossier {
+namespace client {
 namespace _response {
   enum : char { 
     OK,
@@ -35,7 +37,7 @@ struct list_args {
 
 struct down_args {
   std::string idPage;
-  ioFile outfile {-1};
+  std::string outFile;
 
   std::string host, port;
 };
@@ -61,14 +63,6 @@ struct s_args {
   std::string host, port;
 };
 
-/*
-int setArgs(mod_company_args &args, int argc, char *argv[]);
-int setArgs(list_args &args, int argc, char *argv[]);
-int setArgs(down_args& args, int argc, char *argv[]);
-int setArgs(del_args &args, int argc, char *argv[]);
-int setArgs(up_args& args, int argc, char *argv[]);
-int setArgs(s_args& args, int argc, char *argv[]);
-*/
 
 int download_doc(Context &ctx, int argc, char *argv[]);
 int remove_doc(Context &ctx, int argc, char *argv[]);
@@ -86,4 +80,6 @@ int perform_add_company(Context &ctx, mod_company_args &args);
 int perform_del_company(Context &ctx, mod_company_args &args);
 int perform_list_company(Context &ctx, list_args &args);
 
+};
+};
 #endif

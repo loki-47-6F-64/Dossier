@@ -3,6 +3,8 @@
 #include "client/args.h"
 #include "err.h"
 
+namespace dossier {
+namespace client {
 int setArgs(mod_company_args &args, int argc, char *argv[]) {
   if(argc != 3) {
     return -1;
@@ -46,3 +48,5 @@ int perform_add_company(Context &ctx, mod_company_args &args) {
   }
   return 0;
 }
+};
+};

@@ -3,6 +3,8 @@
 #include "file/file.h"
 
 #define ROOT_SERVER "/home/loki/keys/server/"
+
+namespace dossier {
 namespace config {
   // Initialize with default values
   _database database {
@@ -156,4 +158,5 @@ namespace config {
   
     return 0;
   }
+};
 };

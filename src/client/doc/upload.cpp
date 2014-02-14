@@ -5,6 +5,8 @@
 
 #include "err.h"
 
+namespace dossier {
+namespace client {
 constexpr int buffer_size = 1024;
 
 int setArgs(up_args& args, int argc, char *argv[]) {
@@ -63,3 +65,5 @@ int perform_upload(Context &ctx, up_args &args) {
   }
   return 0;
 }
+};
+};

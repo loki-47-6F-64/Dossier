@@ -4,6 +4,8 @@
 #include "client/args.h"
 #include "err.h"
 
+namespace dossier {
+namespace client {
 int setArgs(list_args &args, int argc, char *argv[]) {
   if(argc != 2) {
     return -1;
@@ -65,3 +67,6 @@ int perform_list_company(Context &ctx, list_args &args) {
   fout.out();
   return 0;
 }
+
+};
+};

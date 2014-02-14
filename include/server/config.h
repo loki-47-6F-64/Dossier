@@ -3,7 +3,9 @@
 
 #include <string>
 #include <arpa/inet.h>
+namespace dossier {
 namespace config {
+
   struct _server {
     std::string certPath, keyPath;
 
@@ -38,6 +40,7 @@ namespace config {
   int file(const char *path);
 
   extern const char *err_msg;
+};
 };
 
 #endif

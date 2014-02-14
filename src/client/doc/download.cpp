@@ -2,15 +2,17 @@
 
 #include "err.h"
 
+namespace dossier {
+namespace client {
 int setArgs(down_args& args, int argc, char *argv[]) {
   if(argc != 4) {
     return -1;
   }
 
-  args.idPage = *argv++;
-  args.outfile.access(*argv++, fileStreamRead);
-  args.host = *argv++;
-  args.port = *argv++;
+  args.idPage  = *argv++;
+  args.outFile = *argv++;
+  args.host    = *argv++;
+  args.port    = *argv++;
 
   return 0;
 }
@@ -45,9 +47,14 @@ int perform_download(Context &ctx, down_args &args) {
     return -1;
   }
 
-  if(server.copy(args.outfile)) {
+  ioFile outfile { -1 };
+  outfile.access(args.outFile, fileStreamRead);
+
+  if(server.copy(outfile)) {
     return -1;
   }
 
   return 0;
 }
+};
+};

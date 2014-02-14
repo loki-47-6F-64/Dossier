@@ -10,6 +10,7 @@
 // #include <vector>
 // #include <functional>
 
+namespace dossier {
 class SqlConnect {
   MYSQL _con;
 
@@ -40,5 +41,5 @@ public:
 
   void close(); 
 };
-
+};
 #endif
