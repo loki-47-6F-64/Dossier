@@ -48,19 +48,29 @@ int perform_upload(Context &ctx, up_args &args) {
 
   ioFile in(buffer_size, -1);
 
-  in.access(args.infile.c_str(), fileStreamRead);
+  if(in.access(args.infile.c_str(), fileStreamRead)) {
+    set_err(("Can't open file" +args.infile +": "+ sys_err()).c_str());
+    return -1;
+  }
+
   print(server,
     static_cast<char>(_req_code::UPLOAD),
     args.company, '\0',
     status.st_size, '\0'
   );
 
-  if(in.copy(server)) {
+  int err;
+  if((err = in.copy(server))) {
+    server.clear();
+    server.next();
+    server_err(server);
+
     return -1;
   }
 
   if(server.next()) {
-    print(ferr, "Server error: ", server_err(server), '\n');
+    //print(ferr, "Server error: ", server_err(server), '\n');
+    server_err(server);
     return -1;
   }
   return 0;

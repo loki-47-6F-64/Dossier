@@ -54,8 +54,9 @@ int64_t Database::validateUser(std::string& username) {
 
   std::ostringstream query;
 
-  query << "SELECT 1 FROM user WHERE username='" << 
-  username.data() << "' LIMIT 1";
+  DEBUG_LOG("Validate user: ",username);
+  query << "SELECT idUser FROM user WHERE username='" << 
+  username << "' LIMIT 1";
   //query << "' AND password='";
   //query << hash.data(); query << "' LIMIT 1)";
 

@@ -45,7 +45,8 @@ int perform_remove(Context &ctx, del_args &args) {
   );
 
   if(server.next()) {
-    print(ferr, "Server error: ", server_err(server), '\n');
+    server_err(server);
+//    print(ferr, "Server error: ", server_err(server), '\n');
     return -1;
   }
   return 0;

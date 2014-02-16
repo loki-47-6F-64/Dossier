@@ -13,18 +13,19 @@
 namespace dossier {
 
 
+#define TEST_DIR "./src/test/"
 #define HOST "localhost", "8088"
 std::vector<client::s_args> _s_args {
   { "","","", "ING", {}, HOST }
 };
 std::vector<client::up_args> _up_args {
-  { "./test_up.pdf", "ING", HOST }
+  { TEST_DIR "test_up.pdf", "ING", HOST }
 };
 std::vector<client::down_args> _down_args {
-  { "0", "./test_down.pdf", HOST }
+  { "4", TEST_DIR "test_down.pdf", HOST }
 };
 std::vector<client::del_args> _del_args {
-  { "0", HOST }
+  { "4", HOST }
 };
 std::vector<client::list_args> _list_args {
   { HOST }
@@ -46,9 +47,9 @@ TEST(server, TestServer) {
       server::start_server(test_server, config::server.port);
   });
 
-  std::string caPath   = "./src/test/test_server.crt";
-  std::string certPath = "./src/test/test_client.crt";
-  std::string keyPath  = "./src/test/test_client.key";
+  std::string caPath   = TEST_DIR "test_server.crt";
+  std::string certPath = TEST_DIR "test_client.crt";
+  std::string keyPath  = TEST_DIR "test_client.key";
 
   Context client_ctx = init_ctx_client(caPath, certPath, keyPath);
   ioFile fout(1024, -1, dup(1));
@@ -89,7 +90,7 @@ TEST(server, TestServer) {
 }
 };
 int main(int argc, char *argv[]) {
-  dossier::config::file("./src/test/dossier.conf");
+  dossier::config::file(TEST_DIR "dossier.conf");
   log_open(dossier::config::storage.log.c_str());
 
   ::testing::InitGoogleTest(&argc, argv);

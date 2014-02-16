@@ -129,7 +129,16 @@ int requestDownload::exec(Database &db) {
   std::string path = getDocPath(idUser, idPage);
 
   ioFile page(1024);
-  page.access(path, fileStreamRead);
+  if(page.access(path, fileStreamRead)) {
+    const char *err = sys_err();
+    print(error, "Downloading failed: ", err);
+
+    print(*_socket,
+      CHAR(_response::INTERNAL_ERROR),
+      err);
+
+    return -1;
+  }
 
   print(*_socket, CHAR(_response::OK));
   int err = page.copy(*_socket);

@@ -108,7 +108,8 @@ int perform_search(Context &ctx, s_args &args) {
   server.append('\0').out();
 
   if(server.next()) {
-    print(ferr, "Server error: ", server_err(server), '\n');
+//    print(ferr, "Server error: ", server_err(server), '\n');
+    server_err(server);
     return -1;
   }
 

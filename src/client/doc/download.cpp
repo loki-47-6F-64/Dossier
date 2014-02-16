@@ -39,16 +39,19 @@ int perform_download(Context &ctx, down_args &args) {
 
   print(server,
     static_cast<char>(_req_code::DOWNLOAD),
-    args.idPage.c_str(), '\0'
+    args.idPage, '\0'
   );
 
   if(server.next()) {
-    print(ferr, "Server error: ", server_err(server), '\n');
+//    print(ferr, "Server error: ", server_err(server), '\n');
+    server_err(server);
     return -1;
   }
 
   ioFile outfile { -1 };
-  outfile.access(args.outFile, fileStreamRead);
+  if(outfile.access(args.outFile, fileStreamWrite)) {
+    set_err(("Couldn't open file " + std::move(args.outFile) + ": " + sys_err()).c_str());
+  }
 
   if(server.copy(outfile)) {
     return -1;
