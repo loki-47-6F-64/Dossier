@@ -7,7 +7,9 @@
 #include "server/server.h"
 #include "server/proxy.h"
 #include "server/main.h"
+#include "database/database.h"
 #include "err.h"
+#include "proc.h"
 
 #include "client/args.h"
 namespace dossier {
@@ -15,6 +17,7 @@ namespace dossier {
 
 #define TEST_DIR "./src/test/"
 #define HOST "localhost", "8088"
+
 std::vector<client::s_args> _s_args {
   { "","","", "ING", {}, HOST }
 };
@@ -33,6 +36,63 @@ std::vector<client::list_args> _list_args {
 std::vector<client::mod_company_args> _mod_company_args {
   { "ING", HOST }
 };
+
+TEST(ExternalProcess, TestExternalProcess) {
+  const char *argv[] {
+    "cat",
+    TEST_DIR "test_proc.txt",
+    nullptr
+  };
+  Proc proc = proc_open(*argv, argv, pipeType::READ);
+
+  ASSERT_GT(proc.pid, 0);
+
+  std::string file, fpipe;
+  proc.fpipe.eachByte([&](unsigned char ch) {
+    fpipe.push_back(ch);
+    return 0;
+  });
+
+  ioFile f { 1 };
+  ASSERT_EQ(f.access(TEST_DIR "test_proc.txt", fileStreamRead), 0);
+
+  f.eachByte([&](unsigned char ch) {
+    file.push_back(ch);
+    return 0;
+  });
+
+  EXPECT_EQ(file, fpipe);
+}
+
+// Test sql_connect and prepare the test database at the same time.
+TEST(mysql, TestMysql) {
+  SqlConnect sql_client;
+ 
+  ASSERT_NE(sql_client.open(
+    config::database.host.c_str(),
+    config::database.user.c_str(),
+    config::database.password.c_str()
+  ), nullptr) << "Database error: " << sql_client.error();
+
+  ioFile f { 1 };
+  ASSERT_EQ(f.access(TEST_DIR "test.sql", fileStreamRead), 0);
+
+  std::string sql;
+  std::vector<std::string> statements;
+  f.eachByte([&](unsigned char ch) {
+    if(ch == '\n') return 0;
+    if(ch == ';') {
+      statements.push_back(std::move(sql));
+      return 0;
+    }
+    sql.push_back(ch);
+    return 0;
+  });
+
+  for(auto &statement : statements) {
+    EXPECT_EQ(sql_client.query(std::move(statement)), 0) << "Database error: " << sql_client.error();
+  }
+}
 
 TEST(server, TestServer) {
   ASSERT_EQ(0,
@@ -88,6 +148,7 @@ TEST(server, TestServer) {
   test_server.stop();
   t.join();
 }
+
 };
 int main(int argc, char *argv[]) {
   dossier::config::file(TEST_DIR "dossier.conf");

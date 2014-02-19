@@ -257,7 +257,7 @@ int requestUpload::exec(Database &db) {
   };
 
   Proc proc = proc_open(*args, args, pipeType::READ);
-  if(proc.pid >= 0) {
+  if(proc.pid > 0) {
 
     std::string content;
     out.access(path, fileStreamRead);
