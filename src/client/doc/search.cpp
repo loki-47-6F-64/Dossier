@@ -114,7 +114,9 @@ int perform_search(Context &ctx, s_args &args) {
   }
 
   int x = 0;
-  /*server.eachByte([&](unsigned char ch) {
+  print(fout, "Date added, Company name, idPage, Partial content\n"
+              "-------------------------------------------------\n");
+  server.eachByte([&](unsigned char ch) {
     if(!ch) {
       if(x++ == 3) {
         x = 0;
@@ -132,8 +134,8 @@ int perform_search(Context &ctx, s_args &args) {
     return 0;
   });
 
-  return fout.out();*/
-  return server.copy(fout);
+  return fout.out();
+  //return server.copy(fout);
 }
 };
 };
