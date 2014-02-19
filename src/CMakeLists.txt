@@ -20,12 +20,12 @@ project(Dossier)
 #################################################################
 #include libraries
 
-execute_process(COMMAND mysql_config --libs OUTPUT_VARIABLE MYSQL_LIBS)
+#execute_process(COMMAND mysql_config --libs OUTPUT_VARIABLE MYSQL_LIBS)
 
 #remove \n to prevent crash
-STRING(REPLACE "\n" "" MYSQL_LIBS ${MYSQL_LIBS})
+#STRING(REPLACE "\n" "" MYSQL_LIBS ${MYSQL_LIBS})
 
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MYSQL_LIBS} -lcrypto -lssl -lpthread -ldl -lgtest")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lmysqlclient -lz -lm -lcrypto -lssl -lpthread -ldl -lgtest")
 
 #################################################################
 #include compiler flags
@@ -64,13 +64,13 @@ set(DOSSIER_SOURCE_FILES
 
 ##################################################################
 #include headers
-execute_process(COMMAND mysql_config --include OUTPUT_VARIABLE MYSQL_INCLUDE)
+#execute_process(COMMAND mysql_config --include OUTPUT_VARIABLE MYSQL_INCLUDE)
 
 #remove \n
-STRING(REPLACE "\n" "" MYSQL_INCLUDE ${MYSQL_INCLUDE})
+#STRING(REPLACE "\n" "" MYSQL_INCLUDE ${MYSQL_INCLUDE})
 
 #Add include to compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MYSQL_INCLUDE}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_FIND_ROOT_PATH}/usr/include/mysql")
 
 set(DB_HEADER_FILES database.h sql_connect.h)
 set(DB_HEADER_DIR database/)
