@@ -3,8 +3,9 @@
 
 #include <deque>
 #include <vector>
-#include <thread>
 #include <future>
+
+#include "thread_t.h"
 /*
  * Allow threads to execute unhindered
  * while keeping full controll over the threads.
@@ -17,14 +18,14 @@ public:
 private:
   std::deque<task_type> _task;
 
-  std::vector<std::thread> _thread;
+  std::vector<thread_t> _thread;
   std::mutex _task_mutex;
 
   bool _continue;
 public:
   ThreadPool(int threads) : _thread(threads), _continue(true) {
     for(auto &t : _thread) {
-      t = std::thread(&ThreadPool::_main, this);
+      t = thread_t(&ThreadPool::_main, this);
     }
   }
 

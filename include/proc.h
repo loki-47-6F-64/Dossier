@@ -2,8 +2,6 @@
 #define DOSSIER_PROC_H
 
 #include <unistd.h>
-#include <thread>
-#include <future>
 
 #include "file/file.h"
 

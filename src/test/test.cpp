@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <thread>
 #include <future>
 #include <vector>
 
@@ -10,6 +9,7 @@
 #include "database/database.h"
 #include "err.h"
 #include "proc.h"
+#include "thread_t.h"
 
 #include "client/args.h"
 namespace dossier {
@@ -103,7 +103,7 @@ TEST(server, TestServer) {
   );
 
   server::Server test_server;
-  std::thread t([&]() {
+  thread_t t([&]() {
       server::start_server(test_server, config::server.port);
   });
 
