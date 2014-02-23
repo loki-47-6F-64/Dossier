@@ -120,6 +120,6 @@ add_test(Server test.out)
 ###################################################################
 #Installation
 
-install(TARGETS dossier DESTINATION "/usr/bin")
+install(TARGETS dossier dossier_client DESTINATION "/usr/bin")
 install(FILES dossier.service DESTINATION "/usr/lib/systemd/system")
 install(FILES dossier.conf    DESTINATION "/etc/dossier")
