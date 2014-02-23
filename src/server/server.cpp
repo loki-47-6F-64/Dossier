@@ -16,14 +16,15 @@ void Server::operator() () {
 }
 
 int Server::addListener(uint16_t port, int max_parallel, std::function<void(Client&&)> f) {
-  sockaddr_in server {
-    config::server.inet,
-    htons(port),
-    { INADDR_ANY }
-  };
+  sockaddr_in6 server;
+
+  memset(&server, 0, sizeof(server));
+  server.sin6_family = AF_INET6;
+  server.sin6_port = htons(port);
+  server.sin6_addr = { 0 };
 
   pollfd pfd { 
-    socket(config::server.inet, SOCK_STREAM, 0),
+    socket(AF_INET6, SOCK_STREAM, 0),
     POLLIN,
     0 
   };
@@ -34,7 +35,7 @@ int Server::addListener(uint16_t port, int max_parallel, std::function<void(Clie
   // Allow reuse of local addresses
   setsockopt(pfd.fd, SOL_SOCKET, SO_REUSEADDR, &pfd.fd, sizeof(pfd.fd));
 
-  if(bind(pfd.fd, (sockaddr*)&server, sizeof(sockaddr_in)) < 0) {
+  if(bind(pfd.fd, (sockaddr*)&server, sizeof(server)) < 0) {
     return -1;
   }
 
@@ -74,12 +75,12 @@ inline bool Server::isRunning() {
 }
 
 void Server::_listen() {
-  _RAII_lock lg(_server_stop_lock);
-
-  sockaddr_in client; //TODO: Stack overflow on raspberry pi?
-  int addr_size { sizeof(sockaddr_in) };
+  sockaddr_in6 client;
+  socklen_t addr_size { sizeof(client) };
 
   int result;
+
+  _RAII_lock lg(_server_stop_lock);
   while(_continue) {
     if((result = poll(_listenfd.data(), _listenfd.size(), config::server.poll_timeout)) > 0) 
     {
@@ -89,7 +90,7 @@ void Server::_listen() {
         if(poll.revents == POLLIN) {
           DEBUG_LOG("Accepting client");
   
-          Client client = ssl_accept(Server::_ssl_ctx.get(), poll.fd, (sockaddr*)&client, (socklen_t*)&addr_size);
+          Client client = ssl_accept(Server::_ssl_ctx.get(), poll.fd, (sockaddr*)&client, &addr_size);
           if(client.socket.get() == nullptr) {
             continue;
           }

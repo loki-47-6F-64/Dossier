@@ -22,7 +22,7 @@ namespace config {
   _server server {
     std::string(ROOT_SERVER "root.crt"),
     std::string(ROOT_SERVER "ssl_server.key"),
-    8080, AF_INET, 200
+    8080, 200
   };
 
 
@@ -102,18 +102,6 @@ namespace config {
     return !name.empty();
   }
   
-  in_addr_t stoaddr(const char *str) {
-    in_addr_t result;
-  
-    char *pos = (char*)str;
-  
-    for(int x = 0; x < 4; ++x) {
-      result |= ((in_addr_t)std::strtol(str, &pos, 10)) << x;
-    }
-  
-    return result;
-  }
-  
   void setConfig(std::string &&configName, std::string &dest) {
     auto key_pair = config_map.find(configName);
     if(key_pair != config_map.cend()) {
@@ -128,18 +116,6 @@ namespace config {
     }
   }
 
-  void setConfig(std::string &&configName, sa_family_t &dest, bool is_inet_family) {
-    auto key_pair = config_map.find(configName);
-    if(key_pair != config_map.cend()) {
-      if((*key_pair).second.back() == '4') {
-        dest = AF_INET;
-      }
-      else {
-        dest = AF_INET6;
-      }
-    }
-  }
-
   int file(const char *path) {
     if(readConfig(path)) {
       return -1;
@@ -147,7 +123,6 @@ namespace config {
 
     setConfig("certificate_path", config::server.certPath);
     setConfig("key_path", config::server.keyPath);
-    setConfig("ip_family", config::server.inet, true);
     setConfig("port", config::server.port);
     setConfig("host", config::database.host);
     setConfig("password", config::database.password);

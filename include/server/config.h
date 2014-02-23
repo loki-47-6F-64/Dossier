@@ -10,7 +10,6 @@ namespace config {
     std::string certPath, keyPath;
 
     uint16_t port;
-    sa_family_t inet;         // IPv4 or IPv6
 
     int poll_timeout;         // Time in milliseconds before timeout
   };
