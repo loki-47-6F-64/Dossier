@@ -106,12 +106,10 @@ add_library(dossier_lib ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
 add_executable(dossier server/main.cpp ${DOSSIER_HEADER_FILES})
 add_executable(dossier_client client/main.cpp ${DOSSIER_HEADER_FILES})
 add_executable(test.out test/test.cpp ${DOSSIER_HEADER_FILES})
-add_executable(thread.out ../main.cpp)
 
 target_link_libraries(dossier dossier_lib)
 target_link_libraries(dossier_client dossier_lib)
 target_link_libraries(test.out dossier_lib)
-target_link_libraries(thread.out dossier_lib)
 
 ###################################################################
 #Testing

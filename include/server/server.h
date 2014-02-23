@@ -8,7 +8,6 @@
 #include "file/_ssl.h"
 #include "thread_pool.h"
 #include "move_by_copy.h"
-#include "file/file.h"
 
 namespace dossier {
 namespace server {
@@ -22,6 +21,8 @@ class Server {
 
   ThreadPool<void> _task;
   std::mutex _server_stop_lock;
+
+  typedef std::lock_guard<decltype(_server_stop_lock)> _RAII_lock;
 public:
   Server();
   ~Server();

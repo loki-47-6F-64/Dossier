@@ -273,6 +273,7 @@ private:
   }
 };
 
+//TODO: print is not thread_safe
 template<class File>
 void _print(File& file) {
   file.out();

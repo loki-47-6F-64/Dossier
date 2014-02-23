@@ -61,7 +61,7 @@ void Server::removeListener(int fd) {
 
 void Server::stop() {
   _continue = false;
-  std::lock_guard<std::mutex> lg(_server_stop_lock);
+  _RAII_lock lg(_server_stop_lock);
 } 
 
 Server::Server() : _continue(false), _task(5) {}
@@ -74,12 +74,12 @@ inline bool Server::isRunning() {
 }
 
 void Server::_listen() {
-  sockaddr_in client;
+  _RAII_lock lg(_server_stop_lock);
+
+  sockaddr_in client; //TODO: Stack overflow on raspberry pi?
   int addr_size { sizeof(sockaddr_in) };
 
   int result;
-
-  std::lock_guard<std::mutex> lg(_server_stop_lock);
   while(_continue) {
     if((result = poll(_listenfd.data(), _listenfd.size(), config::server.poll_timeout)) > 0) 
     {
