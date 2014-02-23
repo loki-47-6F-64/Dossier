@@ -111,10 +111,13 @@ sslFile ssl_connect(Context &ctx, const char *hostname, const char* port) {
 
 
   if(connect(serverFd, server->ai_addr, server->ai_addrlen)) {
+    freeaddrinfo(server);
+
     set_err(sys_err());
     return sslFd;
   }
 
+  freeaddrinfo(server);
   SSL *ssl = SSL_new(ctx.get());
 
   if(ssl == nullptr) {
