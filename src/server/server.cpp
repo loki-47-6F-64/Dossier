@@ -75,8 +75,8 @@ inline bool Server::isRunning() {
 }
 
 void Server::_listen() {
-  sockaddr_in6 client;
-  socklen_t addr_size { sizeof(client) };
+  sockaddr_in6 client_addr;
+  socklen_t addr_size { sizeof(client_addr) };
 
   int result;
 
@@ -90,7 +90,7 @@ void Server::_listen() {
         if(poll.revents == POLLIN) {
           DEBUG_LOG("Accepting client");
   
-          Client client = ssl_accept(Server::_ssl_ctx.get(), poll.fd, (sockaddr*)&client, &addr_size);
+          Client client = ssl_accept(Server::_ssl_ctx.get(), poll.fd, (sockaddr*)&client_addr, &addr_size);
           if(client.socket.get() == nullptr) {
             continue;
           }
