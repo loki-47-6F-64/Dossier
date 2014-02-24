@@ -89,8 +89,12 @@ void print_usage() {
 
 int start(int argc, char *argv[]) {
   init_ssl();
-  return perform_task(argc -1, argv + 1);
+  if(perform_task(argc -1, argv + 1)) {
+    print(fout, "Error: ", get_current_err(), '\n');
+    return -1;
+  }
 
+  return 0;
 }
 
 };
