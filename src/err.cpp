@@ -4,6 +4,12 @@
 #include <openssl/err.h>
 #include "err.h"
 
+#ifdef __clang__
+#if __clang_major__ *100 + __clang_minor__ *10 < 330
+#define thread_local __thread
+#endif
+#endif
+
 constexpr int MAX_ERROR_BUFFER = 120;
 thread_local char err_buf[MAX_ERROR_BUFFER];
 

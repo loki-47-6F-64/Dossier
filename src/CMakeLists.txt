@@ -25,7 +25,7 @@ project(Dossier)
 #remove \n to prevent crash
 #STRING(REPLACE "\n" "" MYSQL_LIBS ${MYSQL_LIBS})
 
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lmysqlclient -lz -lm -lcrypto -lssl -lpthread -ldl -lgtest")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 
 #################################################################
 #include compiler flags
@@ -101,15 +101,16 @@ foreach(included ${DOSSIER_INCLUDED})
 endforeach(included)
 
 ###################################################################
+set(COMMON_DEPS dossier_lib pthread z m crypto ssl dl)
 
 add_library(dossier_lib ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
 add_executable(dossier server/main.cpp ${DOSSIER_HEADER_FILES})
 add_executable(dossier_client client/main.cpp ${DOSSIER_HEADER_FILES})
 add_executable(test.out test/test.cpp ${DOSSIER_HEADER_FILES})
 
-target_link_libraries(dossier dossier_lib)
-target_link_libraries(dossier_client dossier_lib)
-target_link_libraries(test.out dossier_lib)
+target_link_libraries(dossier mysqlclient ${COMMON_DEPS}) 
+target_link_libraries(dossier_client ${COMMON_DEPS})
+target_link_libraries(test.out ${COMMON_DEPS})
 
 ###################################################################
 #Testing
