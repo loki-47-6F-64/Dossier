@@ -102,6 +102,7 @@ endforeach(included)
 
 ###################################################################
 set(COMMON_DEPS dossier_lib pthread z m crypto ssl dl)
+set(GOOGLE_TEST_DEPENDENCIES gtest mysqlclient ${COMMON_DEPS})
 
 add_library(dossier_lib ${DOSSIER_SOURCE_FILES} ${DOSSIER_HEADER_FILES})
 add_executable(dossier server/main.cpp ${DOSSIER_HEADER_FILES})
@@ -110,7 +111,7 @@ add_executable(test.out test/test.cpp ${DOSSIER_HEADER_FILES})
 
 target_link_libraries(dossier mysqlclient ${COMMON_DEPS}) 
 target_link_libraries(dossier_client ${COMMON_DEPS})
-target_link_libraries(test.out ${COMMON_DEPS})
+target_link_libraries(test.out ${GOOGLE_TEST_DEPENDENCIES})
 
 ###################################################################
 #Testing
